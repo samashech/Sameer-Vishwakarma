@@ -1,0 +1,79 @@
+import { useState, useEffect } from 'react';
+import { Menu, X, Mail, Code, Briefcase } from 'lucide-react';
+import './NavBar.css';
+
+const NavBar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
+
+  const navLinks = [
+    { name: '/ about', href: '#about' },
+    { name: '/ experience', href: '#experience' },
+    { name: '/ projects', href: '#projects' },
+  ];
+
+  return (
+    <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      <div className="nav-container">
+        <div className="logo">
+          <a href="#">SV.</a>
+        </div>
+
+        <div className="desktop-nav">
+          <ul className="nav-links">
+            {navLinks.map((link, i) => (
+              <li key={i} style={{ animationDelay: `${i * 100}ms` }}>
+                <a href={link.href}>{link.name}</a>
+              </li>
+            ))}
+          </ul>
+          <div className="social-links">
+            <a href="mailto:sameervishwakarmaa12@gmail.com" aria-label="Email"><Mail size={20} /></a>
+            <a href="https://github.com/samashech" target="_blank" rel="noreferrer" aria-label="GitHub"><Code size={20} /></a>
+            <a href="https://linkedin.com/in/sameer-vishwakarma" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Briefcase size={20} /></a>
+          </div>
+        </div>
+
+        <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
+          {isOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
+        <ul className="mobile-nav-links">
+          {navLinks.map((link, i) => (
+            <li key={i}>
+              <a href={link.href} onClick={toggleMenu}>{link.name}</a>
+            </li>
+          ))}
+        </ul>
+        <div className="mobile-social-links">
+          <a href="mailto:sameervishwakarmaa12@gmail.com"><Mail size={24} /></a>
+          <a href="https://github.com/samashech"><Code size={24} /></a>
+          <a href="https://linkedin.com/in/sameer-vishwakarma"><Briefcase size={24} /></a>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default NavBar;
