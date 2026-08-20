@@ -3,6 +3,7 @@ import { TypeAnimation } from 'react-type-animation';
 import { ExternalLink, Code, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FadeInSection } from '../components/FadeInSection';
 import AsciiPortrait from '../components/AsciiPortrait';
+import CanvasText from '../components/CanvasText';
 import './Home.css';
 
 const Home = () => {
@@ -77,7 +78,14 @@ const Home = () => {
       <section id="hero" className="hero-section">
         <div className="hero-content">
           <FadeInSection delay="100ms">
-            <h1 className="hero-greeting">Hi, my name is</h1>
+            <h1 className="hero-greeting">
+              <CanvasText 
+                text="Hi, my name is" 
+                font="normal 16px Menlo, Consolas, Monaco, 'Courier New', monospace" 
+                color="var(--green-bright)" 
+                lineHeight={24}
+              />
+            </h1>
           </FadeInSection>
           <FadeInSection delay="200ms">
             <h2 className="hero-name">Sameer Vishwakarma.</h2>
@@ -97,11 +105,15 @@ const Home = () => {
             </h3>
           </FadeInSection>
           <FadeInSection delay="400ms">
-            <p className="hero-bio">
-              Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. 
-              Currently building production IoT and data-visualization projects at RAIoT Labs while 
-              leading student teams through hackathons and technical competitions.
-            </p>
+            <div className="hero-bio">
+              <CanvasText 
+                text="Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. Currently building production IoT and data-visualization projects at RAIoT Labs while leading student teams through hackathons and technical competitions."
+                font="normal 18px Calibre, Inter, San Francisco, SF Pro Text, -apple-system, system-ui, sans-serif"
+                color="var(--slate)"
+                lineHeight={28}
+                delay={200}
+              />
+            </div>
           </FadeInSection>
           <FadeInSection delay="500ms">
             <a href="mailto:sameervishwakarmaa12@gmail.com" className="btn hero-btn">Say hi</a>
