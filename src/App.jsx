@@ -4,11 +4,13 @@ import SidebarNav from './components/SidebarNav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import GameMode from './components/GameMode';
+import { FlowFieldBackground } from './components/FlowFieldBackground';
 import './App.css';
 
 function App() {
   return (
     <div className="app-container">
+      <FlowFieldBackground />
       <NavBar />
       <SidebarNav />
       <GameMode />

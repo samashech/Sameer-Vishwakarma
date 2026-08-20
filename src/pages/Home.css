@@ -4,6 +4,7 @@
 
 /* HERO */
 .hero-section {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -12,6 +13,8 @@
 }
 
 .hero-content {
+  position: relative;
+  z-index: 1;
   flex: 1;
   max-width: 600px;
 }
@@ -54,6 +57,8 @@
 }
 
 .hero-visual {
+  z-index: 1;
+  position: relative;
   flex: 1;
   display: flex;
   justify-content: center;
@@ -62,14 +67,19 @@
 
 @media (max-width: 900px) {
   .hero-section {
+  position: relative;
     flex-direction: column;
     justify-content: center;
     padding-top: 100px;
   }
   .hero-content {
+  position: relative;
+  z-index: 1;
     text-align: center;
   }
   .hero-visual {
+  z-index: 1;
+  position: relative;
     margin-top: 50px;
   }
 }

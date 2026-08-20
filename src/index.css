@@ -12,6 +12,7 @@
   --green-bright: #64ffda;
   --green-tint: rgba(100, 255, 218, 0.1);
   --yellow: #ffd166;
+  --cream-muted: rgba(245, 239, 224, 0.15);
 }
 
 * {
