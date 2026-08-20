@@ -5,6 +5,7 @@ import { FadeInSection } from '../components/FadeInSection';
 import AsciiPortrait from '../components/AsciiPortrait';
 import CanvasText from '../components/CanvasText';
 import PremeasuredTextContainer from '../components/PremeasuredTextContainer';
+import { PartingText } from '../components/PartingText';
 import './Home.css';
 
 const Home = () => {
@@ -23,6 +24,8 @@ const Home = () => {
     'PostgreSQL (Prisma)', 'SQLite', 'Redis', 'Supabase', 'Firebase',
     'Docker', 'Linux', 'TensorFlow', 'MediaPipe'
   ];
+
+  const aboutText = "Currently a Junior Developer at RAIoT Labs, Amity University, Jaipur (2025–Present): building and deploying IoT hardware/software projects, bridging sensor hardware with full-stack dashboards for real-time data visualization; leading cross-functional student teams through hackathons, robowars, and autonomous flight events; maintaining/contributing to open-source repos through documentation and code review.";
 
   const experience = [
     {
@@ -135,13 +138,7 @@ const Home = () => {
         <div className="about-content">
           <div className="about-text">
             <FadeInSection delay="100ms">
-              <p>
-                Currently a Junior Developer at RAIoT Labs, Amity University, Jaipur (2025–Present): 
-                building and deploying IoT hardware/software projects, bridging sensor hardware with 
-                full-stack dashboards for real-time data visualization; leading cross-functional student 
-                teams through hackathons, robowars, and autonomous flight events; maintaining/contributing 
-                to open-source repos through documentation and code review.
-              </p>
+              <PartingText text={aboutText} />
             </FadeInSection>
             <ul className="skills-list">
               {skills.map((skill, i) => (
