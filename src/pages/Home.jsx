@@ -6,6 +6,7 @@ import AsciiPortrait from '../components/AsciiPortrait';
 import CanvasText from '../components/CanvasText';
 import PremeasuredTextContainer from '../components/PremeasuredTextContainer';
 import { PartingText } from '../components/PartingText';
+import Art from '../components/Art';
 import './Home.css';
 
 const Home = () => {
@@ -261,6 +262,8 @@ const Home = () => {
           </div>
         </FadeInSection>
       </section>
+      {/* ART SECTION */}
+      <Art />
     </div>
   );
 };
