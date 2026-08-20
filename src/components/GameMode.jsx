@@ -42,6 +42,7 @@ const GameMode = () => {
   const keys = useRef({ ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, Space: false, a: false, d: false, w: false, s: false });
   const scrollOffset = useRef(0);
   const domPlatforms = useRef([]);
+  const textElementsRef = useRef([]);
   const generatedPlatforms = useRef([]);
   const items = useRef([]);
   const lastTime = useRef(0);
@@ -81,46 +82,112 @@ const GameMode = () => {
     setCollectibles(0);
     player.current = { ...player.current, x: 50, y: window.scrollY + 100, vx: 0, vy: 0, isGrounded: false };
     
-    const extractDOMPlatforms = () => {
-      const elements = Array.from(document.querySelectorAll('h1, h2, h3, p, li, .card, .btn, .project-card'));
-      return elements.map(el => {
-        const rect = el.getBoundingClientRect();
-        if (rect.width > 30 && rect.height > 10) {
-          return {
-            x: rect.left,
-            y: rect.top + window.scrollY,
-            width: rect.width,
-            height: 10
-          };
+    const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, .section-title, .intro-heading, .job-title, .company-name, .card-title, .footer-credit, .project-card h3';
+    textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
+    
+    const staticRects = textElementsRef.current.map(el => {
+      const rect = el.getBoundingClientRect();
+      return {
+        x: rect.left,
+        y: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height
+      };
+    }).filter(r => r.width >= 60 && r.height <= 100);
+
+    const checkOverlap = (rect, list) => {
+      for (const other of list) {
+        if (rect.x < other.x + other.width &&
+            rect.x + rect.width > other.x &&
+            rect.y < other.y + other.height &&
+            rect.y + rect.height > other.y) {
+          return true;
         }
-        return null;
-      }).filter(Boolean);
+      }
+      return false;
     };
 
-    domPlatforms.current = extractDOMPlatforms();
-    
+    const currentScroll = window.scrollY;
     const docHeight = Math.max(document.body.scrollHeight, window.innerHeight);
+    const numCollectibles = 5;
+    // Distribute collectibles from just below player down to the bottom
+    const availableHeight = docHeight - currentScroll - window.innerHeight * 0.3;
+    const bandHeight = Math.max(availableHeight / numCollectibles, 200); // ensure at least 200px band
     const newGenPlatforms = [];
     const newItems = [];
     
-    for (let i = 0; i < 20; i++) {
-      newGenPlatforms.push({
-        x: Math.random() * (window.innerWidth - 100),
-        y: Math.random() * docHeight,
-        width: 80 + Math.random() * 100,
-        height: 10
-      });
-    }
+    const jumpDistX = 180;
+    const jumpDistY = 140;
+    
+    let prevPoint = { x: 50, y: currentScroll + 200 };
 
-    for (let i = 0; i < 5; i++) {
-      newItems.push({
-        x: 100 + Math.random() * (window.innerWidth - 200),
-        y: (docHeight / 6) * (i + 1),
+    for (let i = 0; i < numCollectibles; i++) {
+      const startY = currentScroll + window.innerHeight * 0.3 + i * bandHeight;
+      const targetY = startY + Math.random() * (bandHeight * 0.6);
+      const targetX = 100 + Math.random() * (window.innerWidth - 200);
+
+      const item = {
+        x: targetX,
+        y: targetY - 20,
         width: 15,
         height: 15,
         collected: false,
         popScale: 0
-      });
+      };
+      
+      let ledge = {
+        x: targetX - 40,
+        y: targetY,
+        width: 100,
+        height: 10,
+        alpha: 0
+      };
+      
+      let attempts = 0;
+      while (checkOverlap(ledge, staticRects) && attempts < 10) {
+         ledge.y += 20;
+         item.y += 20;
+         attempts++;
+      }
+      newItems.push(item);
+      newGenPlatforms.push(ledge);
+
+      let curr = { ...prevPoint };
+      let chainAttempts = 0;
+      
+      while ((curr.y < ledge.y - jumpDistY || Math.abs(curr.x - ledge.x) > jumpDistX) && chainAttempts < 50) {
+        let nextY = curr.y + Math.random() * jumpDistY;
+        if (nextY > ledge.y) nextY = ledge.y - Math.random() * 50;
+
+        let dirX = Math.sign(ledge.x - curr.x);
+        if (dirX === 0) dirX = Math.random() > 0.5 ? 1 : -1;
+        let nextX = curr.x + dirX * (Math.random() * jumpDistX);
+        
+        if (Math.abs(curr.y - ledge.y) < 50) {
+           nextY = curr.y + (Math.random() * 40 - 20); 
+        }
+
+        let plat = {
+          x: nextX - 40,
+          y: nextY,
+          width: 80,
+          height: 10,
+          alpha: 0
+        };
+
+        let overlapAttempts = 0;
+        while (checkOverlap(plat, staticRects) && overlapAttempts < 10) {
+          plat.x += 20;
+          if (plat.x + plat.width > window.innerWidth) plat.x -= 40;
+          overlapAttempts++;
+        }
+        
+        newGenPlatforms.push(plat);
+        curr = { x: plat.x + plat.width/2, y: plat.y };
+        chainAttempts++;
+      }
+      
+      prevPoint = { x: ledge.x + ledge.width/2, y: ledge.y };
     }
 
     generatedPlatforms.current = newGenPlatforms;
@@ -165,7 +232,8 @@ const GameMode = () => {
     const handleResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        domPlatforms.current = extractDOMPlatforms();
+        const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, .section-title, .intro-heading, .job-title, .company-name, .card-title, .footer-credit, .project-card h3';
+        textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
       }, 100);
     };
     window.addEventListener('resize', handleResize);
@@ -205,6 +273,30 @@ const GameMode = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       scrollOffset.current = window.scrollY;
+
+      // Recalculate live DOM platforms based on scroll
+      if (textElementsRef.current) {
+        domPlatforms.current = textElementsRef.current.map(el => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width >= 60 && rect.height <= 100) {
+            return {
+              x: rect.left,
+              y: rect.top + scrollOffset.current, // doc space
+              width: rect.width,
+              height: 10
+            };
+          }
+          return null;
+        }).filter(Boolean);
+      }
+
+      // Progressive reveal for generated platforms
+      generatedPlatforms.current.forEach(plat => {
+        // Fade in if within viewport + margin
+        if (plat.y < scrollOffset.current + window.innerHeight + 100) {
+          plat.alpha += (1 - plat.alpha) * 5 * dt;
+        }
+      });
 
       const p = player.current;
       const jumpKeyHeld = keys.current.ArrowUp || keys.current.w || keys.current.Space;
@@ -373,8 +465,8 @@ const GameMode = () => {
       ctx.translate(0, -scrollOffset.current);
 
       // Draw generated platforms
-      ctx.fillStyle = 'rgba(100, 255, 218, 0.3)';
       generatedPlatforms.current.forEach(plat => {
+        ctx.fillStyle = `rgba(100, 255, 218, ${plat.alpha * 0.3})`;
         ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
       });
 
@@ -457,11 +549,19 @@ const GameMode = () => {
           
           {gameState !== 'playing' && (
             <div className="game-modal fade-in">
-              <h2>{gameState === 'won' ? 'You Win!' : 'You Fell!'}</h2>
+              <h2>{gameState === 'won' ? 'all brain cells recovered' : 'you fell'}</h2>
+              <p style={{ color: 'var(--slate)', marginBottom: '20px', fontFamily: 'monospace' }}>
+                {gameState === 'won' 
+                  ? 'you successfully collected everything!' 
+                  : 'watch your step next time.'}
+              </p>
               <button className="btn" onClick={resetGame}>
                 <RotateCcw size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                Play Again (Space)
+                {gameState === 'won' ? 'play again' : 'try again'}
               </button>
+              <p style={{ color: 'var(--slate)', marginTop: '15px', fontSize: '12px', fontFamily: 'monospace' }}>
+                (press Space to restart)
+              </p>
             </div>
           )}
         </div>

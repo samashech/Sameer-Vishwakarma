@@ -47,41 +47,91 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
         const data = imageData.data;
         
         const particles = [];
-        const step = width <= 400 ? 5 : 8; // Higher density for 400px
+        const step = width <= 400 ? 3 : 5; // Reduced from 5 to 3 to double particle count
         
-        for (let y = 0; y < height; y += step) {
-          for (let x = 0; x < width; x += step) {
+        // 1. Convert to grayscale (perceptual luminance) and find min/max for normalization
+        const luminance = new Float32Array(width * height);
+        let minLum = 1.0;
+        let maxLum = 0.0;
+        
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
             const index = (y * width + x) * 4;
             const r = data[index];
             const g = data[index+1];
             const b = data[index+2];
             const a = data[index+3];
             
-            // Only process pixels with high alpha (mask out background)
             if (a > 128) {
-              // Calculate perceived brightness
-              let brightness = (0.299*r + 0.587*g + 0.114*b) / 255;
+              const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+              luminance[y * width + x] = lum;
+              if (lum < minLum) minLum = lum;
+              if (lum > maxLum) maxLum = lum;
+            } else {
+              luminance[y * width + x] = 1.0; // Background as white
+            }
+          }
+        }
+
+        // Add a slight margin to min/max to avoid extreme clipping
+        if (maxLum === minLum) maxLum = minLum + 0.01;
+        const lumRange = maxLum - minLum;
+        
+        const DENSITY_CHARS = DENSITY;
+
+        for (let y = step; y < height - step; y += step) {
+          for (let x = step; x < width - step; x += step) {
+            const index = (y * width + x) * 4;
+            const a = data[index+3];
+            
+            if (a > 128) {
+              const rawLum = luminance[y * width + x];
               
-              // Apply gamma/contrast curve to push midtones apart
-              // Formula: b = b^gamma. Gamma < 1 lightens midtones, > 1 darkens
-              const gamma = 0.8;
-              brightness = Math.pow(brightness, gamma);
+              // Normalize to subject's actual tonal range (fixes overexposure)
+              let normLum = (rawLum - minLum) / lumRange;
+              normLum = Math.max(0, Math.min(1, normLum));
               
-              // Invert so dark pixels get denser characters
-              const invBrightness = 1.0 - brightness;
+              // 2. Edge Detection (Sobel)
+              const tl = luminance[(y-1)*width + (x-1)];
+              const tc = luminance[(y-1)*width + x];
+              const tr = luminance[(y-1)*width + (x+1)];
+              const ml = luminance[y*width + (x-1)];
+              const mr = luminance[y*width + (x+1)];
+              const bl = luminance[(y+1)*width + (x-1)];
+              const bc = luminance[(y+1)*width + x];
+              const br = luminance[(y+1)*width + (x+1)];
+
+              const gx = -tl + tr - 2*ml + 2*mr - bl + br;
+              const gy = -tl - 2*tc - tr + bl + 2*bc + br;
+              const edgeMag = Math.sqrt(gx*gx + gy*gy);
               
-              const charIndex = Math.floor(invBrightness * (DENSITY.length - 1));
-              const char = DENSITY[charIndex] || '@';
+              // 3. Non-linear mapping (gamma curve)
+              let adjustedLum = Math.pow(normLum, 0.6);
+              
+              // 4. Edge-aware density boost
+              const edgeBoost = Math.min(edgeMag * 1.5, 0.5); 
+              adjustedLum = adjustedLum - edgeBoost;
+              
+              // Hair vs Skin separation:
+              if (adjustedLum < 0.3) {
+                adjustedLum -= 0.1; // Make hair even darker
+              }
+
+              // Invert so dark pixels get denser characters, and clamp
+              const invBrightness = Math.max(0, Math.min(1, 1.0 - adjustedLum));
+              
+              const charIndex = Math.floor(invBrightness * (DENSITY_CHARS.length - 1));
+              const char = DENSITY_CHARS[charIndex] || '@';
               
               particles.push({
-                x: x + (Math.random() - 0.5) * 400, // Start randomized
+                x: x + (Math.random() - 0.5) * 400,
                 y: y + (Math.random() - 0.5) * 400,
                 baseX: x,
                 baseY: y,
                 char,
                 alpha: 0,
-                targetAlpha: a / 255, // Opacity derived from alpha mask
-                delay: Math.random() * 1500 // Delay for assembly
+                targetAlpha: a / 255,
+                delay: Math.random() * 1500
               });
             }
           }
