@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Gamepad2, Info, RotateCcw } from 'lucide-react';
+import { prepare, layout, clearCache } from '@chenglou/pretext';
 import './GameMode.css';
 
 const GameMode = () => {
@@ -43,6 +44,7 @@ const GameMode = () => {
   const scrollOffset = useRef(0);
   const domPlatforms = useRef([]);
   const textElementsRef = useRef([]);
+  const domPlatformsRegistry = useRef([]);
   const generatedPlatforms = useRef([]);
   const items = useRef([]);
   const lastTime = useRef(0);
@@ -83,17 +85,51 @@ const GameMode = () => {
     player.current = { ...player.current, x: 50, y: window.scrollY + 100, vx: 0, vy: 0, isGrounded: false };
     
     const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, .section-title, .intro-heading, .job-title, .company-name, .card-title, .footer-credit, .project-card h3';
-    textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
     
-    const staticRects = textElementsRef.current.map(el => {
-      const rect = el.getBoundingClientRect();
-      return {
-        x: rect.left,
-        y: rect.top + window.scrollY,
-        width: rect.width,
-        height: rect.height
-      };
-    }).filter(r => r.width >= 60 && r.height <= 100);
+    let pretextAvailable = typeof prepare === 'function';
+    try { if (pretextAvailable) prepare('test', '12px Arial'); } 
+    catch (e) { pretextAvailable = false; }
+    
+    const buildRegistry = () => {
+      textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
+      
+      domPlatformsRegistry.current = textElementsRef.current.map(el => {
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        
+        let width = rect.width;
+        let height = rect.height;
+        
+        if (pretextAvailable) {
+           const font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+           try {
+             const prepared = prepare(el.textContent || '', font);
+             const lh = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+             const layoutResult = layout(prepared, width, lh);
+             if (layoutResult && typeof layoutResult.height !== 'undefined') {
+                height = layoutResult.height;
+             }
+           } catch(e) {}
+        }
+        
+        if (width >= 60 && height <= 100) {
+           return {
+             el,
+             x: rect.left,
+             y: rect.top + window.scrollY,
+             width,
+             height: 10 // collision height
+           };
+        }
+        return null;
+      }).filter(Boolean);
+    };
+
+    buildRegistry();
+
+    const staticRects = domPlatformsRegistry.current.map(plat => ({
+      x: plat.x, y: plat.y, width: plat.width, height: plat.height
+    }));
 
     const checkOverlap = (rect, list) => {
       for (const other of list) {
@@ -232,17 +268,36 @@ const GameMode = () => {
     const handleResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, .section-title, .intro-heading, .job-title, .company-name, .card-title, .footer-credit, .project-card h3';
-        textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
+        buildRegistry();
       }, 100);
     };
+    
+    let scrollTimer;
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          domPlatformsRegistry.current.forEach(plat => {
+            const rect = plat.el.getBoundingClientRect();
+            plat.x = rect.left;
+            plat.y = rect.top + window.scrollY;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
     window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(requestRef.current);
+      if (typeof clearCache === 'function') clearCache();
     };
   }, [isActive, gameState]);
 
@@ -274,21 +329,8 @@ const GameMode = () => {
       canvas.height = window.innerHeight;
       scrollOffset.current = window.scrollY;
 
-      // Recalculate live DOM platforms based on scroll
-      if (textElementsRef.current) {
-        domPlatforms.current = textElementsRef.current.map(el => {
-          const rect = el.getBoundingClientRect();
-          if (rect.width >= 60 && rect.height <= 100) {
-            return {
-              x: rect.left,
-              y: rect.top + scrollOffset.current, // doc space
-              width: rect.width,
-              height: 10
-            };
-          }
-          return null;
-        }).filter(Boolean);
-      }
+      // Use precomputed platforms from the registry
+      domPlatforms.current = domPlatformsRegistry.current;
 
       // Progressive reveal for generated platforms
       generatedPlatforms.current.forEach(plat => {

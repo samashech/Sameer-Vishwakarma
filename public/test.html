@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="module">
+    import { prepare, layout } from 'https://cdn.jsdelivr.net/npm/@chenglou/pretext@1.0.4/dist/index.mjs';
+    const p = prepare('hello world', '12px Arial');
+    const l = layout(p, 100, 14);
+    console.log("Layout output:", JSON.stringify(l));
+    document.body.innerText = JSON.stringify(l);
+  </script>
+</head>
+<body></body>
+</html>

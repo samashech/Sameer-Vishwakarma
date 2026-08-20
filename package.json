@@ -12,6 +12,7 @@
   "keywords": [],
   "type": "module",
   "dependencies": {
+    "@chenglou/pretext": "^0.0.8",
     "@imgly/background-removal-node": "^1.4.5",
     "canvas": "^3.2.3",
     "lucide-react": "^1.33.0",
