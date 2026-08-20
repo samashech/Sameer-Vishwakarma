@@ -10,7 +10,7 @@ export function PartingText({ className, text }) {
   const prefersReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
 
   useEffect(() => {
-    if (!hasSegmenter || prefersReducedMotion) return;
+    if (!hasSegmenter) return; // ignores prefersReducedMotion for now
 
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -90,10 +90,9 @@ export function PartingText({ className, text }) {
     };
 
     window.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mouseleave', onMouseLeave);
 
     let animationFrameId;
-    let isAnimating = false;
+    let isAnimating = false; console.log("Animation stopped");
 
     const startAnimation = () => {
       if (!isAnimating) {
@@ -185,7 +184,7 @@ export function PartingText({ className, text }) {
           if (Math.abs(mouseX - targetMouseX) > 0.5 || Math.abs(mouseY - targetMouseY) > 0.5) {
             animationFrameId = requestAnimationFrame(loop);
           } else {
-            isAnimating = false;
+            isAnimating = false; console.log("Animation stopped");
             mouseX = targetMouseX;
             mouseY = targetMouseY;
             // Draw one final frame perfectly snapped
@@ -202,18 +201,19 @@ export function PartingText({ className, text }) {
     };
 
     window.addEventListener('mousemove', mouseListener);
+    container.addEventListener('mouseleave', onMouseLeave);
     startAnimation();
 
     return () => {
       window.removeEventListener('mousemove', mouseListener);
-      canvas.removeEventListener('mouseleave', onMouseLeave);
+      container.removeEventListener('mouseleave', onMouseLeave);
       resizeObserver.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
 
   }, [text, hasSegmenter, prefersReducedMotion]);
 
-  if (!hasSegmenter || prefersReducedMotion) {
+  if (!hasSegmenter) {
     return <p className={className}>{text}</p>;
   }
 
@@ -221,7 +221,7 @@ export function PartingText({ className, text }) {
   // We use userSelect: text on the invisible text so it's selectable.
   return (
     <div ref={containerRef} className={className} style={{ position: 'relative' }}>
-      <p ref={textRef} style={{ color: 'transparent', userSelect: 'text' }}>{text}</p>
+      <p ref={textRef} style={{ opacity: 0, userSelect: 'text' }}>{text}</p>
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} />
     </div>
   );
