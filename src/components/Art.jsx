@@ -1,15 +1,46 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FadeInSection } from './FadeInSection';
 import { artData } from '../data/artData';
 import './Art.css';
 
 const Art = () => {
-  // Select a subset for preview
-  const previewPieces = artData.filter(piece => 
-    ['sasuke', 'koenigsegg-gemera', 'ferrari-488'].includes(piece.id)
-  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+
+  // Handle keyboard navigation for modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedImageIndex === null) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'ArrowRight') showNext();
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImageIndex]);
+
+  const openModal = (index) => {
+    setSelectedImageIndex(index);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setSelectedImageIndex(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const showPrev = (e) => {
+    if (e) e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev === 0 ? artData.length - 1 : prev - 1));
+  };
+
+  const showNext = (e) => {
+    if (e) e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev === artData.length - 1 ? 0 : prev + 1));
+  };
+
+  const selectedPiece = selectedImageIndex !== null ? artData[selectedImageIndex] : null;
 
   return (
     <section id="art" className="art-preview-section">
@@ -20,27 +51,49 @@ const Art = () => {
         </p>
       </FadeInSection>
 
-      <div className="art-grid">
-        {previewPieces.map((piece, i) => (
-          <FadeInSection key={piece.id} delay={`${i * 100}ms`}>
-            <div className="art-card">
-              <img src={piece.src} alt={piece.alt} className="art-image" loading="lazy" />
-              <div className="art-overlay">
-                <div className="art-overlay-content">
-                  <h4>{piece.title}</h4>
-                  <p>{piece.category}</p>
-                </div>
+      <div className="gallery-grid">
+        {artData.map((piece, i) => (
+          <FadeInSection key={piece.id} delay={`${(i % 3) * 100}ms`}>
+            <div className="gallery-card" onClick={() => openModal(i)}>
+              <div className="gallery-img-wrapper">
+                <img src={piece.src} alt={piece.alt} loading="lazy" />
+              </div>
+              <div className="gallery-info">
+                <h3>{piece.title}</h3>
+                <p>{piece.category}</p>
               </div>
             </div>
           </FadeInSection>
         ))}
       </div>
 
-      <FadeInSection delay="300ms">
-        <Link to="/art" className="explore-link">
-          Explore collection <ArrowRight size={16} style={{ marginLeft: '8px' }} />
-        </Link>
-      </FadeInSection>
+      {selectedPiece && (
+        <div className="art-modal-overlay" onClick={closeModal}>
+          <button className="modal-close" onClick={closeModal}>
+            <X size={32} />
+          </button>
+          
+          <button className="modal-prev" onClick={showPrev}>
+            <ChevronLeft size={48} />
+          </button>
+          
+          <div className="art-modal-content" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={selectedPiece.src} 
+              alt={selectedPiece.alt} 
+              className="art-modal-img" 
+            />
+            <div className="art-modal-info">
+              <h3>{selectedPiece.title}</h3>
+              <p>{selectedPiece.category}</p>
+            </div>
+          </div>
+          
+          <button className="modal-next" onClick={showNext}>
+            <ChevronRight size={48} />
+          </button>
+        </div>
+      )}
     </section>
   );
 };

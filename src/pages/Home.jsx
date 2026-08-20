@@ -242,26 +242,6 @@ const Home = () => {
           </div>
         </FadeInSection>
       </section>
-      
-      {/* EDUCATION SECTION */}
-      <section id="education" className="education-section">
-        <FadeInSection>
-          <h2 className="section-heading">/ education</h2>
-        </FadeInSection>
-        <FadeInSection delay="100ms">
-          <div className="education-card">
-            <h3 className="edu-degree">B.Tech, Computer Science & Engineering</h3>
-            <p className="edu-school">Amity University, Jaipur, Rajasthan</p>
-            <span className="edu-date">Expected 2029</span>
-          </div>
-        </FadeInSection>
-        <FadeInSection delay="200ms">
-          <div className="education-card">
-            <h3 className="edu-degree">High School Diploma</h3>
-            <p className="edu-school">Best Higher Secondary School, Ahmedabad, Gujarat</p>
-          </div>
-        </FadeInSection>
-      </section>
       {/* ART SECTION */}
       <Art />
     </div>
