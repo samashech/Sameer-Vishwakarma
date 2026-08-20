@@ -124,3 +124,9 @@
     display: flex;
   }
 }
+
+.mobile-menu-btn {
+  padding: 10px;
+  min-width: 44px;
+  min-height: 44px;
+}

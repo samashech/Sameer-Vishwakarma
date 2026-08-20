@@ -233,8 +233,8 @@
   color: var(--green-bright);
   border: 1px solid var(--green-bright);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -389,4 +389,11 @@
   font-size: 14px;
   display: block;
   margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  .project-card {
+    min-width: 280px;
+    max-width: 100%;
+  }
 }

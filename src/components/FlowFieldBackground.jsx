@@ -94,7 +94,8 @@ export function FlowFieldBackground() {
     const noise = new SimplexNoise();
     
     let dashes = [];
-    const gridSize = 25; // Spacing between dashes
+    const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+    const gridSize = isMobile ? 35 : 25; // Spacing between dashes
     const dashLength = 8;
     
     const initGrid = () => {
@@ -149,7 +150,9 @@ export function FlowFieldBackground() {
     let targetMouseX = -1000;
     let targetMouseY = -1000;
     
+    const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const onMouseMove = (e) => {
+      if (isTouchDevice()) return;
       const rect = canvas.getBoundingClientRect();
       targetMouseX = e.clientX - rect.left;
       targetMouseY = e.clientY - rect.top;
@@ -239,7 +242,17 @@ export function FlowFieldBackground() {
       
       ctx.stroke();
       
-      animationFrameId = requestAnimationFrame(render);
+      if (document.hidden) {
+        const checkVisibility = () => {
+          if (!document.hidden) {
+            document.removeEventListener('visibilitychange', checkVisibility);
+            animationFrameId = requestAnimationFrame(render);
+          }
+        };
+        document.addEventListener('visibilitychange', checkVisibility);
+      } else {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
     
     render();

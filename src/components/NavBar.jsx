@@ -58,7 +58,17 @@ const NavBar = () => {
         </button>
       </div>
 
+      
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="mobile-overlay" 
+          onClick={toggleMenu} 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 }}
+        />
+      )}
       {/* Mobile Menu */}
+
       <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
         <ul className="mobile-nav-links">
           {navLinks.map((link, i) => (

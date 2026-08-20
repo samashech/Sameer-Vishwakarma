@@ -47,7 +47,8 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
         const data = imageData.data;
         
         const particles = [];
-        const baseStep = width <= 400 ? 2 : 3; // Reduced from 5 to 3 to double particle count
+        const isMobile = window.innerWidth < 768;
+        const baseStep = isMobile ? 4 : 3; // Reduced from 5 to 3 to double particle count
         
         // 1. Convert to grayscale (perceptual luminance) and find min/max for normalization
         const luminance = new Float32Array(width * height);
@@ -230,7 +231,16 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
           });
           
           ctx.globalAlpha = 1.0;
-          requestRef.current = requestAnimationFrame(render);
+          if (!document.hidden) requestRef.current = requestAnimationFrame(render);
+          else {
+            const checkVisibility = () => {
+              if (!document.hidden) {
+                document.removeEventListener('visibilitychange', checkVisibility);
+                requestRef.current = requestAnimationFrame(render);
+              }
+            };
+            document.addEventListener('visibilitychange', checkVisibility);
+          }
         };
 
         requestRef.current = requestAnimationFrame(render);
@@ -238,7 +248,9 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
     
     loadImageAndSample();
 
+    const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const handleMouseMove = (e) => {
+      if (isTouchDevice()) return;
       const rect = canvas.getBoundingClientRect();
       mouseRef.current = {
         x: e.clientX - rect.left,

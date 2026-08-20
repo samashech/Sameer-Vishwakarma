@@ -201,7 +201,7 @@ const Home = () => {
           <div className="projects-slider" ref={sliderRef}>
             {projects.map((project, i) => (
               <div key={i} className="project-card">
-                <div className="project-image" style={{ backgroundImage: `url(${project.image})` }}></div>
+                <div className="project-image"><img src={project.image} alt={project.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
                 <div className="project-content">
                   <h3 className="project-title">{project.title}</h3>
                   <PremeasuredTextContainer 

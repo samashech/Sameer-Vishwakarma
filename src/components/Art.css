@@ -269,3 +269,10 @@
     padding: 20px;
   }
 }
+
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

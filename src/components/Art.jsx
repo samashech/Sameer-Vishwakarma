@@ -20,6 +20,34 @@ const Art = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedImageIndex]);
 
+  
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndEvent = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      showNext();
+    }
+    if (isRightSwipe) {
+      showPrev();
+    }
+  };
+
   const openModal = (index) => {
     setSelectedImageIndex(index);
     document.body.style.overflow = 'hidden';
@@ -68,7 +96,7 @@ const Art = () => {
       </div>
 
       {selectedPiece && (
-        <div className="art-modal-overlay" onClick={closeModal}>
+        <div className="art-modal-overlay" onClick={closeModal} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEndEvent}>
           <button className="modal-close" onClick={closeModal}>
             <X size={32} />
           </button>

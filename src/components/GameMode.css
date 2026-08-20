@@ -117,3 +117,55 @@
   margin-bottom: 20px;
   font-size: 32px;
 }
+
+.game-too-small {
+  color: var(--slate);
+  font-family: Menlo, Consolas, Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  background: var(--light-navy);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.touch-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.dpad, .action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.touch-btn {
+  background: rgba(10, 25, 47, 0.7);
+  border: 1px solid var(--green-bright);
+  color: var(--green-bright);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.touch-btn.jump {
+  width: 70px;
+  border-radius: 25px;
+  font-family: Menlo, Consolas, Monaco, 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.touch-btn:active {
+  background: var(--green-tint);
+}

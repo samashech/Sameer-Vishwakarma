@@ -8,6 +8,18 @@ const GameMode = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [gameState, setGameState] = useState('playing'); // playing, won, lost
   const [collectibles, setCollectibles] = useState(0);
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsMobileScreen(window.innerWidth < 360);
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    
+    const handleResize = () => setIsMobileScreen(window.innerWidth < 360);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   
   const canvasRef = useRef(null);
   const requestRef = useRef();
@@ -553,6 +565,14 @@ const GameMode = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [isActive, gameState, collectibles]);
 
+  if (isMobileScreen) {
+    return (
+      <div className="game-toggle-container">
+        <span className="game-too-small">Screen too small for game</span>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="game-toggle-container">
@@ -589,6 +609,19 @@ const GameMode = () => {
           </div>
           <canvas ref={canvasRef} className="game-canvas" />
           
+          
+      {isTouchDevice && isActive && gameState === 'playing' && (
+        <div className="touch-controls">
+          <div className="dpad">
+            <button className="touch-btn" onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowLeft = true; }} onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowLeft = false; }} onPointerCancel={(e) => { keys.current.ArrowLeft = false; }}>←</button>
+            <button className="touch-btn" onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowRight = true; }} onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowRight = false; }} onPointerCancel={(e) => { keys.current.ArrowRight = false; }}>→</button>
+          </div>
+          <div className="action-buttons">
+            <button className="touch-btn jump" onPointerDown={(e) => { e.preventDefault(); keys.current.Space = true; player.current.jumpBufferTimer = player.current.maxJumpBuffer; }} onPointerUp={(e) => { e.preventDefault(); keys.current.Space = false; player.current.isJumping = false; if (player.current.vy < 0) player.current.vy *= 0.4; }} onPointerCancel={(e) => { keys.current.Space = false; }}>JUMP</button>
+          </div>
+        </div>
+      )}
+
           {gameState !== 'playing' && (
             <div className="game-modal fade-in">
               <h2>{gameState === 'won' ? 'all brain cells recovered' : 'you fell'}</h2>
