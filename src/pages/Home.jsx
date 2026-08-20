@@ -4,6 +4,7 @@ import { ExternalLink, Code, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FadeInSection } from '../components/FadeInSection';
 import AsciiPortrait from '../components/AsciiPortrait';
 import CanvasText from '../components/CanvasText';
+import PremeasuredTextContainer from '../components/PremeasuredTextContainer';
 import './Home.css';
 
 const Home = () => {
@@ -205,9 +206,14 @@ const Home = () => {
                 <div className="project-image" style={{ backgroundImage: `url(${project.image})` }}></div>
                 <div className="project-content">
                   <h3 className="project-title">{project.title}</h3>
-                  <div className="project-desc">
+                  <PremeasuredTextContainer 
+                    className="project-desc"
+                    text={project.desc}
+                    font="normal 16px Calibre, Inter, San Francisco, SF Pro Text, -apple-system, system-ui, sans-serif"
+                    lineHeight={24}
+                  >
                     <p>{project.desc}</p>
-                  </div>
+                  </PremeasuredTextContainer>
                   <ul className="project-stack">
                     {project.stack.map((tech, j) => (
                       <li key={j}>{tech}</li>
