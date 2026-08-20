@@ -47,7 +47,7 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
         const data = imageData.data;
         
         const particles = [];
-        const step = width <= 400 ? 3 : 5; // Reduced from 5 to 3 to double particle count
+        const baseStep = width <= 400 ? 2 : 3; // Reduced from 5 to 3 to double particle count
         
         // 1. Convert to grayscale (perceptual luminance) and find min/max for normalization
         const luminance = new Float32Array(width * height);
@@ -79,8 +79,8 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
         
         const DENSITY_CHARS = DENSITY;
 
-        for (let y = step; y < height - step; y += step) {
-          for (let x = step; x < width - step; x += step) {
+        for (let y = baseStep; y < height - baseStep; y += baseStep) {
+          for (let x = baseStep; x < width - baseStep; x += baseStep) {
             const index = (y * width + x) * 4;
             const a = data[index+3];
             
@@ -103,21 +103,51 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
 
               const gx = -tl + tr - 2*ml + 2*mr - bl + br;
               const gy = -tl - 2*tc - tr + bl + 2*bc + br;
+              
               const edgeMag = Math.sqrt(gx*gx + gy*gy);
               
-              // 3. Non-linear mapping (gamma curve)
-              let adjustedLum = Math.pow(normLum, 0.6);
+              const centerX = width / 2;
+              const centerY = height * 0.4;
+              const distToCenter = Math.hypot(x - centerX, y - centerY);
+              const maxDist = Math.hypot(width/2, height/2);
+              const centerWeight = Math.max(0, 1 - (distToCenter / (maxDist * 0.6))); 
               
-              // 4. Edge-aware density boost
-              const edgeBoost = Math.min(edgeMag * 1.5, 0.5); 
-              adjustedLum = adjustedLum - edgeBoost;
+              // Hair and pupils part denser: if pixel is dark, force high detailLevel
+              const isDark = normLum < 0.35;
+              const darkBoost = isDark ? 0.4 : 0;
               
-              // Hair vs Skin separation:
-              if (adjustedLum < 0.3) {
-                adjustedLum -= 0.1; // Make hair even darker
+              const detailLevel = edgeMag + centerWeight * 0.15 + darkBoost;
+              
+              let localStep;
+              let fontSize;
+              if (detailLevel > 0.3) {
+                 localStep = baseStep;
+                 fontSize = baseStep * 2.5;
+              } else if (detailLevel > 0.12) {
+                 localStep = baseStep * 2;
+                 fontSize = baseStep * 3.5;
+              } else {
+                 localStep = baseStep * 3;
+                 fontSize = baseStep * 5;
               }
 
-              // Invert so dark pixels get denser characters, and clamp
+              if (x % localStep !== 0 || y % localStep !== 0) continue;
+
+              // Gamma curve to brighten skin midtones but preserve highlights (whites of eyes)
+              let adjustedLum = Math.pow(normLum, 0.55);
+              
+              // Subtle edges to prevent heavy nostrils
+              const edgeBoost = Math.min(edgeMag * 1.0, 0.25); 
+              adjustedLum -= edgeBoost;
+              
+              // Pupil definition and hair darkness (extreme contrast for darkest areas)
+              if (normLum < 0.2) {
+                adjustedLum -= 0.5; // Pupils/deep hair get heavy characters (@, #)
+              } else if (normLum < 0.45) {
+                adjustedLum -= 0.1; // Mid-shadows (nostrils, creases) stay subtle
+              }
+
+              // Invert so dark pixels get denser characters
               const invBrightness = Math.max(0, Math.min(1, 1.0 - adjustedLum));
               
               const charIndex = Math.floor(invBrightness * (DENSITY_CHARS.length - 1));
@@ -131,7 +161,8 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
                 char,
                 alpha: 0,
                 targetAlpha: a / 255,
-                delay: Math.random() * 1500
+                delay: Math.random() * 1500,
+                fontSize
               });
             }
           }
@@ -161,7 +192,7 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
         const render = () => {
           ctx.clearRect(0, 0, width, height);
           ctx.fillStyle = 'rgba(100, 255, 218, 1)'; // var(--green-bright)
-          ctx.font = '10px monospace';
+          
           
           const now = Date.now();
           const elapsed = now - startTime;
@@ -193,6 +224,7 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
               p.y += Math.sin(now * 0.002 + p.baseX * 0.01) * 0.2;
 
               ctx.globalAlpha = p.alpha;
+              ctx.font = p.fontSize + 'px monospace';
               ctx.fillText(p.char, p.x, p.y);
             }
           });
