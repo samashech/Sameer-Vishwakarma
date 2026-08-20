@@ -26,12 +26,12 @@ const Home = () => {
     'Docker', 'Linux', 'TensorFlow', 'MediaPipe'
   ];
 
-  const aboutText = "Currently a Junior Developer at RAIoT Labs, Amity University, Jaipur (2025–Present): building and deploying IoT hardware/software projects, bridging sensor hardware with full-stack dashboards for real-time data visualization; leading cross-functional student teams through hackathons, robowars, and autonomous flight events; maintaining/contributing to open-source repos through documentation and code review.";
+  const aboutText = "Currently a Junior Developer at RAIoT Labs, Jaipur (2025–Present): building and deploying IoT hardware/software projects, bridging sensor hardware with full-stack dashboards for real-time data visualization; leading cross-functional student teams through hackathons, robowars, and autonomous flight events; maintaining/contributing to open-source repos through documentation and code review.";
 
   const experience = [
     {
       title: 'Junior Developer',
-      company: 'RAIoT Labs (Amity University)',
+      company: 'RAIoT Labs',
       date: '2025 - Present',
       location: 'Jaipur',
       highlights: [
