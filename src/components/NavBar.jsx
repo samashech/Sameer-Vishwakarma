@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Mail, Code, Briefcase } from 'lucide-react';
+import { Menu, X, Mail } from 'lucide-react';
+import { GithubIcon, InstagramIcon } from './Icons';
 import './NavBar.css';
 
 const NavBar = () => {
@@ -34,7 +35,7 @@ const NavBar = () => {
     <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <div className="logo">
-          <a href="#">SV.</a>
+          <a href="#">Samashech</a>
         </div>
 
         <div className="desktop-nav">
@@ -47,8 +48,8 @@ const NavBar = () => {
           </ul>
           <div className="social-links">
             <a href="mailto:sameervishwakarmaa12@gmail.com" aria-label="Email"><Mail size={20} /></a>
-            <a href="https://github.com/samashech" target="_blank" rel="noreferrer" aria-label="GitHub"><Code size={20} /></a>
-            <a href="https://linkedin.com/in/sameer-vishwakarma" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Briefcase size={20} /></a>
+            <a href="https://github.com/samashech" target="_blank" rel="noreferrer" aria-label="GitHub"><GithubIcon size={20} /></a>
+            <a href="https://www.instagram.com/samashech?igsh=MW81bXhvN3BsYjJxMQ==" target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon size={20} /></a>
           </div>
         </div>
 
@@ -68,8 +69,8 @@ const NavBar = () => {
         </ul>
         <div className="mobile-social-links">
           <a href="mailto:sameervishwakarmaa12@gmail.com"><Mail size={24} /></a>
-          <a href="https://github.com/samashech"><Code size={24} /></a>
-          <a href="https://linkedin.com/in/sameer-vishwakarma"><Briefcase size={24} /></a>
+          <a href="https://github.com/samashech"><GithubIcon size={24} /></a>
+          <a href="https://www.instagram.com/samashech?igsh=MW81bXhvN3BsYjJxMQ=="><InstagramIcon size={24} /></a>
         </div>
       </div>
     </header>
