@@ -48,7 +48,7 @@ const Home = () => {
       desc: 'Full-stack productivity app with a Chrome extension that blocks distracting sites when deadlines are missed; integrates Gemini 2.5 Flash vision + language for real-time habit verification and AI check-ins; frontend on Firebase, backend on Hugging Face Spaces.',
       stack: ['Python', 'FastAPI', 'React', 'Gemini', 'Firebase'],
       github: '#',
-      live: '#',
+      live: 'https://trackly-eosin.vercel.app/',
       image: '/assets/trackly.png'
     },
     {
@@ -56,7 +56,7 @@ const Home = () => {
       desc: 'Matches candidate resumes to live job postings via PyPDF2 parsing + NLP skill extraction; a Matplotlib/Seaborn/Pandas pipeline visualizes skill-gap trends against market demand, served through a Next.js frontend and Flask API.',
       stack: ['Next.js', 'Python', 'Flask', 'Playwright', 'Tailwind'],
       github: '#',
-      live: '#',
+      live: 'https://align-raiot.web.app',
       image: '/assets/align.png'
     },
     {
@@ -72,7 +72,7 @@ const Home = () => {
       desc: 'Transparency platform tracking education budgets, court mandates, and RTI responses on a custom Prisma/SQLite schema, with an interactive evidence room and protest timeline.',
       stack: ['Next.js', 'Prisma', 'SQLite', 'Tailwind CSS'],
       github: '#',
-      live: '#',
+      live: 'https://edurep.vercel.app',
       image: '/assets/edurep.png'
     }
   ];

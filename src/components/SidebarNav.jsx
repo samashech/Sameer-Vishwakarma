@@ -12,7 +12,8 @@ const SidebarNav = () => {
     { name: '/ home', href: '#' },
     { name: '/ about', href: '#about' },
     { name: '/ experience', href: '#experience' },
-    { name: '/ projects', href: '#projects' }
+    { name: '/ projects', href: '#projects' },
+    { name: '/ art', href: '#art' }
   ];
 
   if (!mounted) return null;
