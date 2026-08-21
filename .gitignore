@@ -29,7 +29,7 @@ __pycache__
 *.pyc
 
 # Uploads and static media
-uploads/
+// uploads/
 
 # Environment variables
 .env

@@ -1,268 +1,222 @@
 import React, { useRef, useEffect } from 'react';
 
-// A simple 2D noise implementation (Simplex-like)
-const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
-const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
-
-function dot(g, x, y) {
-  return g[0] * x + g[1] * y;
-}
-
-class SimplexNoise {
-  constructor() {
-    this.p = new Uint8Array(256);
-    for (let i = 0; i < 256; i++) {
-      this.p[i] = Math.floor(Math.random() * 256);
-    }
-    this.perm = new Uint8Array(512);
-    this.permMod12 = new Uint8Array(512);
-    for (let i = 0; i < 512; i++) {
-      this.perm[i] = this.p[i & 255];
-      this.permMod12[i] = (this.perm[i] % 12);
-    }
-    this.grad3 = new Float32Array([
-      1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0,
-      1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, -1,
-      0, 1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1
-    ]);
-  }
-  
-  noise2D(xin, yin) {
-    let n0, n1, n2;
-    const s = (xin + yin) * F2;
-    const i = Math.floor(xin + s);
-    const j = Math.floor(yin + s);
-    const t = (i + j) * G2;
-    const X0 = i - t;
-    const Y0 = j - t;
-    const x0 = xin - X0;
-    const y0 = yin - Y0;
-
-    let i1, j1;
-    if (x0 > y0) { i1 = 1; j1 = 0; }
-    else { i1 = 0; j1 = 1; }
-
-    const x1 = x0 - i1 + G2;
-    const y1 = y0 - j1 + G2;
-    const x2 = x0 - 1.0 + 2.0 * G2;
-    const y2 = y0 - 1.0 + 2.0 * G2;
-
-    const ii = i & 255;
-    const jj = j & 255;
-    
-    let t0 = 0.5 - x0 * x0 - y0 * y0;
-    if (t0 < 0) n0 = 0.0;
-    else {
-      t0 *= t0;
-      const gi0 = this.permMod12[ii + this.perm[jj]] * 3;
-      n0 = t0 * t0 * (this.grad3[gi0] * x0 + this.grad3[gi0 + 1] * y0);
-    }
-
-    let t1 = 0.5 - x1 * x1 - y1 * y1;
-    if (t1 < 0) n1 = 0.0;
-    else {
-      t1 *= t1;
-      const gi1 = this.permMod12[ii + i1 + this.perm[jj + j1]] * 3;
-      n1 = t1 * t1 * (this.grad3[gi1] * x1 + this.grad3[gi1 + 1] * y1);
-    }
-
-    let t2 = 0.5 - x2 * x2 - y2 * y2;
-    if (t2 < 0) n2 = 0.0;
-    else {
-      t2 *= t2;
-      const gi2 = this.permMod12[ii + 1 + this.perm[jj + 1]] * 3;
-      n2 = t2 * t2 * (this.grad3[gi2] * x2 + this.grad3[gi2 + 1] * y2);
-    }
-
-    return 70.0 * (n0 + n1 + n2);
-  }
-}
-
 export function FlowFieldBackground() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const prefersReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+    const prefersReducedMotion = typeof window !== 'undefined' 
+        ? window.matchMedia('(prefers-reduced-motion: reduce)') 
+        : { matches: false };
+        
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    // Parameters matching the exact math from the reference site
+    const gridSize = 14;
+    const maxDash = 13;
+    const minDash = 2;
+    const lineWidth = 1.4;
+    const ringFrequency = 46; 
+    
+    let strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--cream-muted').trim();
+    if (!strokeColor) strokeColor = 'rgba(245, 239, 224, 0.4)'; 
+
     let width = 0;
     let height = 0;
-    let dpr = window.devicePixelRatio || 1;
     
-    const noise = new SimplexNoise();
-    
-    let dashes = [];
-    const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
-    const gridSize = isMobile ? 35 : 25; // Spacing between dashes
-    const dashLength = 8;
-    
-    const initGrid = () => {
-      // Use canvas's own styled dimensions, not the parent's full width
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      
-      ctx.scale(dpr, dpr);
-      
-      dashes = [];
-      // create grid
-      const cols = Math.ceil(width / gridSize) + 1;
-      const rows = Math.ceil(height / gridSize) + 1;
-      
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const posX = x * gridSize;
-          const posY = y * gridSize;
-          // compute a base angle offset using noise (static for the dash base)
-          // We also use this to determine density (skip some dashes)
-          const densityNoise = noise.noise2D(x * 0.1, y * 0.1);
-          if (densityNoise > 0.4) continue; // Sparsity variation
-          
-          dashes.push({
-            x: posX,
-            y: posY,
-            baseAngle: 0, // will be driven by noise field in render
-            gridX: x,
-            gridY: y
-          });
-        }
-      }
-    };
-    
-    let debounceTimer;
-    const resizeObserver = new ResizeObserver(() => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        initGrid();
-      }, 100);
-    });
-    
-     
-      resizeObserver.observe(document.body);
-      initGrid();
+    let cols = 0;
+    let rows = 0;
+    let xs = new Float32Array(0);
+    let ys = new Float32Array(0);
+    let resting = new Float32Array(0);
     
     let mouseX = -1000;
     let mouseY = -1000;
-    let targetMouseX = -1000;
-    let targetMouseY = -1000;
-    
-    const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    const onMouseMove = (e) => {
-      if (isTouchDevice()) return;
+    let currentVelocity = 0; 
+    let isHovering = false;
+    let hoverStartTime = 0;
+    let lastHoverEventTime = 0;
+
+    const initGrid = () => {
       const rect = canvas.getBoundingClientRect();
-      targetMouseX = e.clientX - rect.left;
-      targetMouseY = e.clientY - rect.top;
+      const n = Math.round(rect.width);
+      const i = Math.round(rect.height);
+      if (!n || !i) return;
+      
+      width = n;
+      height = i;
+      
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      
+      cols = Math.ceil(width / gridSize) + 1;
+      rows = Math.ceil(height / gridSize) + 1;
+      xs = new Float32Array(cols);
+      ys = new Float32Array(rows);
+      resting = new Float32Array(cols * rows);
+      
+      const offsetX = (width - (cols - 1) * gridSize) / 2;
+      const offsetY = (height - (rows - 1) * gridSize) / 2;
+      
+      for(let c = 0; c < cols; c++) xs[c] = offsetX + c * gridSize;
+      for(let r = 0; r < rows; r++) ys[r] = offsetY + r * gridSize;
+      
+      // Center of the rings (offset towards bottom left on their site)
+      const cx = width * 0.16;
+      const cy = height * 0.78;
+      const falloff = Math.max(width, height) * 1.8;
+      
+      for(let c = 0; c < cols; c++) {
+        const dx = xs[c] - cx;
+        const colOffset = c * rows;
+        for(let r = 0; r < rows; r++) {
+          const dy = ys[r] - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Concentric rings formula, attenuated by distance
+          resting[colOffset + r] = 0.06 + 0.78 * (0.5 + 0.5 * Math.sin(dist / ringFrequency)) * Math.exp(-dist / falloff);
+        }
+      }
     };
-    
-    const onMouseLeave = () => {
-      targetMouseX = -1000;
-      targetMouseY = -1000;
+
+    const getDashLength = (val) => {
+      if (val <= 0.04) return 0;
+      const len = val > 1 ? maxDash : val * maxDash;
+      return len < minDash ? 0 : len;
     };
-    
-    window.addEventListener('mousemove', onMouseMove);
-     
-      document.addEventListener('mouseleave', onMouseLeave);
-    
-    // Read the CSS variable for the stroke color once
-    let computedColor = getComputedStyle(document.documentElement).getPropertyValue('--cream-muted').trim();
-    if (!computedColor) {
-      computedColor = 'rgba(245, 239, 224, 0.15)'; // fallback
-    }
 
     let animationFrameId;
-    let time = 0;
-    const effectRadius = 150;
     
-    const render = () => {
-      if (!prefersReducedMotion) {
-        time += 0.002; // Idle drift
-        
-        // Mouse interpolation
-        mouseX += (targetMouseX - mouseX) * 0.15;
-        mouseY += (targetMouseY - mouseY) * 0.15;
+    const render = (time) => {
+      if (width === 0 || height === 0) return;
+      
+      lastHoverEventTime ||= time;
+      hoverStartTime ||= time;
+      
+      const dt = Math.min(64, time - lastHoverEventTime);
+      lastHoverEventTime = time;
+      
+      // Force stop ripple if hovered in place without moving for too long (prevents endless jitter)
+      if (isHovering && (time - hoverStartTime > 1200)) {
+        isHovering = false; 
       }
       
+      const targetVel = isHovering ? 1 : 0;
+      currentVelocity = prefersReducedMotion.matches ? targetVel : currentVelocity + (targetVel - currentVelocity) * (1 - Math.exp(-dt / 130));
+      
       ctx.clearRect(0, 0, width, height);
-      
-      ctx.strokeStyle = computedColor;
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = 'round';
-      
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'butt'; // Crucial for crisp dashes
       ctx.beginPath();
       
-      for (let i = 0; i < dashes.length; i++) {
-        const d = dashes[i];
+      const phase = prefersReducedMotion.matches ? 0 : (time - hoverStartTime) / 240;
+      const rippleStrength = currentVelocity > 0.002 ? 0.55 * currentVelocity : 0;
+      
+      const effectRadius = 600;
+      const rippleWavelength = 34;
+      
+      for(let c = 0; c < cols; c++) {
+        const posX = xs[c];
+        const dx = posX - mouseX;
         
-        // Base noise angle
-        const angleNoise = noise.noise2D(d.gridX * 0.05 + time, d.gridY * 0.05 + time);
-        // Base diagonal flow (e.g. Math.PI/4) + noise perturbation
-        let angle = -Math.PI / 6 + angleNoise * 0.5;
+        const inXBounds = rippleStrength > 0 && dx > -effectRadius && dx < effectRadius;
+        const colOffset = c * rows;
         
-        let dx = 0;
-        let dy = 0;
-        
-        if (!prefersReducedMotion && mouseX > -500) {
-          const distX = d.x - mouseX;
-          const distY = d.y - mouseY;
-          const dist = Math.sqrt(distX * distX + distY * distY);
+        for(let r = 0; r < rows; r++) {
+          const posY = ys[r];
+          let val = resting[colOffset + r];
           
-          if (dist < effectRadius) {
-            // Perturb angle and position
-            const influence = 1 - (dist / effectRadius); // 0 to 1
-            // Smooth step interpolation for influence
-            const smoothInfluence = influence * influence * (3 - 2 * influence);
-            
-            // Push away from cursor
-            const pushFactor = 15 * smoothInfluence;
-            const dirAngle = Math.atan2(distY, distX);
-            dx = Math.cos(dirAngle) * pushFactor;
-            dy = Math.sin(dirAngle) * pushFactor;
-            
-            // Warp angle
-            angle += smoothInfluence * (Math.PI / 2);
+          if (inXBounds) {
+            const dy = posY - mouseY;
+            if (dy > -effectRadius && dy < effectRadius) {
+              const distSq = dx * dx + dy * dy;
+              if (distSq < effectRadius * effectRadius) {
+                const dist = Math.sqrt(distSq);
+                const falloff = 1 - dist / effectRadius;
+                // Add the expanding ripple wave
+                val += rippleStrength * falloff * falloff * Math.sin(dist / rippleWavelength - phase);
+              }
+            }
           }
+          
+          const dashLen = getDashLength(val);
+          if (!dashLen) continue;
+          
+          const halfLen = dashLen / 2;
+          // Align precisely to pixel grid to avoid subpixel blurring
+          const yAligned = Math.round(posY) + 0.5;
+          ctx.moveTo(posX - halfLen, yAligned);
+          ctx.lineTo(posX + halfLen, yAligned);
         }
-        
-        const finalX = d.x + dx;
-        const finalY = d.y + dy;
-        
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-        
-        const hx = (dashLength / 2) * cosA;
-        const hy = (dashLength / 2) * sinA;
-        
-        ctx.moveTo(finalX - hx, finalY - hy);
-        ctx.lineTo(finalX + hx, finalY + hy);
       }
       
       ctx.stroke();
       
-      if (document.hidden) {
-        const checkVisibility = () => {
-          if (!document.hidden) {
-            document.removeEventListener('visibilitychange', checkVisibility);
-            animationFrameId = requestAnimationFrame(render);
-          }
-        };
-        document.addEventListener('visibilitychange', checkVisibility);
+      if (!isHovering && currentVelocity <= 0.004) {
+        animationFrameId = 0;
+        lastHoverEventTime = 0;
+        currentVelocity = 0;
       } else {
         animationFrameId = requestAnimationFrame(render);
       }
     };
-    
-    render();
-    
+
+    const triggerRender = () => {
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    const onPointerMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      isHovering = true;
+      hoverStartTime = performance.now();
+      triggerRender();
+    };
+
+    const onPointerLeave = () => {
+      isHovering = false;
+      triggerRender();
+    };
+
+    let resizeTimer;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        initGrid();
+        if (!animationFrameId) {
+            render(performance.now());
+        }
+      }, 100);
+    };
+
+    initGrid();
+    render(performance.now());
+
+    // Bind to window so it tracks movement across the whole screen seamlessly
+    window.addEventListener('resize', onResize);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerdown', onPointerMove);
+    window.addEventListener('pointerup', onPointerLeave);
+    window.addEventListener('pointerleave', onPointerLeave);
+    window.addEventListener('pointercancel', onPointerLeave);
+
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-       
-        document.removeEventListener('mouseleave', onMouseLeave);
-      resizeObserver.disconnect();
-      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerMove);
+      window.removeEventListener('pointerup', onPointerLeave);
+      window.removeEventListener('pointerleave', onPointerLeave);
+      window.removeEventListener('pointercancel', onPointerLeave);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
@@ -275,7 +229,7 @@ export function FlowFieldBackground() {
         right: 0, 
         width: '45vw', 
         height: '100vh', 
-        pointerEvents: 'none',
+        pointerEvents: 'none', 
         zIndex: -1
       }} 
     />
