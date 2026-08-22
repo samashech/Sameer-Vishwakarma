@@ -169,30 +169,29 @@ const GameMode = () => {
     
     let prevPoint = { x: 50, y: currentScroll + 200 };
 
+    const allRects = () => [...staticRects, ...newGenPlatforms];
+    
+    // Check overlap with some padding to prevent clumps and intersecting with text
+    const checkOverlapExpanded = (rect, list, padX = 20, padY = 20) => {
+      const exp = { x: rect.x - padX, y: rect.y - padY, width: rect.width + padX * 2, height: rect.height + padY * 2 };
+      return checkOverlap(exp, list);
+    };
+
     for (let i = 0; i < numCollectibles; i++) {
       const startY = currentScroll + window.innerHeight * 0.3 + i * bandHeight;
       const targetY = startY + Math.random() * (bandHeight * 0.6);
       const targetX = 100 + Math.random() * (window.innerWidth - 200);
 
       const item = {
-        x: targetX,
-        y: targetY - 20,
-        width: 15,
-        height: 15,
-        collected: false,
-        popScale: 0
+        x: targetX, y: targetY - 20, width: 15, height: 15, collected: false, popScale: 0
       };
       
       let ledge = {
-        x: targetX - 40,
-        y: targetY,
-        width: 100,
-        height: 10,
-        alpha: 0
+        x: targetX - 40, y: targetY, width: 100, height: 10, alpha: 0
       };
       
       let attempts = 0;
-      while (checkOverlap(ledge, staticRects) && attempts < 10) {
+      while (checkOverlapExpanded(ledge, allRects(), 10, 10) && attempts < 20) {
          ledge.y += 20;
          item.y += 20;
          attempts++;
@@ -203,39 +202,67 @@ const GameMode = () => {
       let curr = { ...prevPoint };
       let chainAttempts = 0;
       
+      // Generate guaranteed path towards the ledge
       while ((curr.y < ledge.y - jumpDistY || Math.abs(curr.x - ledge.x) > jumpDistX) && chainAttempts < 50) {
-        let nextY = curr.y + Math.random() * jumpDistY;
-        if (nextY > ledge.y) nextY = ledge.y - Math.random() * 50;
+        let diffX = ledge.x - curr.x;
+        let diffY = ledge.y - curr.y;
 
-        let dirX = Math.sign(ledge.x - curr.x);
-        if (dirX === 0) dirX = Math.random() > 0.5 ? 1 : -1;
-        let nextX = curr.x + dirX * (Math.random() * jumpDistX);
-        
-        if (Math.abs(curr.y - ledge.y) < 50) {
-           nextY = curr.y + (Math.random() * 40 - 20); 
+        let placed = false;
+        let nextX, nextY, plat;
+
+        // Try to place a valid platform within jump range
+        for (let tryOut = 0; tryOut < 20; tryOut++) {
+          let maxStepX = Math.min(Math.abs(diffX), jumpDistX);
+          let stepX = Math.sign(diffX) * (20 + Math.random() * Math.max(0, maxStepX - 20));
+          if (Math.abs(diffX) < 50) stepX = (Math.random() - 0.5) * 150; // zig-zag if vertically aligned
+
+          let maxStepY = Math.min(Math.max(0, diffY), jumpDistY);
+          let stepY = 30 + Math.random() * Math.max(0, maxStepY - 30);
+          if (diffY < 50) stepY = (Math.random() - 0.5) * 40;
+
+          nextX = curr.x + stepX;
+          nextY = curr.y + stepY;
+
+          // Keep in bounds
+          nextX = Math.max(40, Math.min(nextX, window.innerWidth - 120));
+
+          plat = { x: nextX - 40, y: nextY, width: 80, height: 10, alpha: 0 };
+
+          if (!checkOverlapExpanded(plat, allRects(), 30, 20)) {
+            placed = true;
+            break;
+          }
         }
 
-        let plat = {
-          x: nextX - 40,
-          y: nextY,
-          width: 80,
-          height: 10,
-          alpha: 0
-        };
-
-        let overlapAttempts = 0;
-        while (checkOverlap(plat, staticRects) && overlapAttempts < 10) {
-          plat.x += 20;
-          if (plat.x + plat.width > window.innerWidth) plat.x -= 40;
-          overlapAttempts++;
+        if (placed) {
+          newGenPlatforms.push(plat);
+          curr = { x: plat.x + plat.width / 2, y: plat.y };
+        } else {
+          // If we couldn't place one without overlap, there's likely text acting as a platform here.
+          // Advance curr conceptually so we don't get stuck.
+          curr = { x: curr.x + Math.sign(diffX) * jumpDistX * 0.8, y: curr.y + jumpDistY * 0.8 };
+          curr.x = Math.max(40, Math.min(curr.x, window.innerWidth - 120));
         }
         
-        newGenPlatforms.push(plat);
-        curr = { x: plat.x + plat.width/2, y: plat.y };
         chainAttempts++;
       }
       
       prevPoint = { x: ledge.x + ledge.width/2, y: ledge.y };
+    }
+
+    // Phase 2: Add extra random platforms for decoration and alternate paths
+    const numExtra = Math.floor(availableHeight / 150);
+    for (let i = 0; i < numExtra; i++) {
+      let plat = {
+        x: 40 + Math.random() * (window.innerWidth - 120),
+        y: currentScroll + 200 + Math.random() * availableHeight,
+        width: 60 + Math.random() * 40,
+        height: 10,
+        alpha: 0
+      };
+      if (!checkOverlapExpanded(plat, allRects(), 20, 20)) {
+        newGenPlatforms.push(plat);
+      }
     }
 
     generatedPlatforms.current = newGenPlatforms;
@@ -486,6 +513,13 @@ const GameMode = () => {
         if (newCollected >= 5) {
           setGameState('won');
         }
+      }
+
+      // Camera Tracking: scroll down as the character goes down
+      const relativeY = p.y - scrollOffset.current;
+      const bottomThreshold = window.innerHeight * 0.6;
+      if (relativeY > bottomThreshold) {
+        window.scrollBy(0, relativeY - bottomThreshold);
       }
 
       // Check lose condition
