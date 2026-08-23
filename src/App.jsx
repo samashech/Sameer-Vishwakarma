@@ -4,7 +4,6 @@ import NavBar from './components/NavBar';
 import SidebarNav from './components/SidebarNav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import ProjectLog from './pages/ProjectLog';
 import './App.css';
 
 const GameMode = lazy(() => import('./components/GameMode'));
@@ -29,7 +28,6 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/log" element={<ProjectLog />} />
         </Routes>
       </main>
       
