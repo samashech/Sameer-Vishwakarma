@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Gamepad2, Info, RotateCcw } from 'lucide-react';
 import { prepare, layout, clearCache } from '@chenglou/pretext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import './GameMode.css';
 
 const GameMode = () => {
@@ -358,8 +359,15 @@ const GameMode = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     lastTime.current = performance.now();
+    let isVisible = document.visibilityState === 'visible';
     
     const update = (time) => {
+      if (!isVisible) {
+        lastTime.current = time;
+        requestRef.current = requestAnimationFrame(update);
+        return;
+      }
+      
       const dt = Math.min((time - lastTime.current) / 1000, 0.1); // cap dt at 100ms
       const dtMs = dt * 1000;
       lastTime.current = time;
@@ -596,8 +604,26 @@ const GameMode = () => {
     };
 
     requestRef.current = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(requestRef.current);
+    
+    const onVisibilityChange = () => {
+      isVisible = document.visibilityState === 'visible';
+      if (isVisible) {
+        lastTime.current = performance.now();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    
+    return () => {
+      cancelAnimationFrame(requestRef.current);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [isActive, gameState, collectibles]);
+
+  const { isReducedMotion } = useReducedMotion();
+
+  if (isReducedMotion) {
+    return null;
+  }
 
   if (isMobileScreen) {
     return (

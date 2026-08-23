@@ -1,0 +1,50 @@
+.live-visitors-pill {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(17, 34, 64, 0.8);
+  border: 1px solid var(--lightest-navy);
+  color: var(--light-slate);
+  font-family: var(--font-mono, 'Fira Code', monospace);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.live-visitors-icon {
+  color: var(--green);
+  animation: pulse-presence 3s infinite;
+}
+
+.live-cursors-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 998;
+  overflow: hidden;
+}
+
+.remote-cursor {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 0 10px currentColor;
+  opacity: 0.6;
+}
+
+@keyframes pulse-presence {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}

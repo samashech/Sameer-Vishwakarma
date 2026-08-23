@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export function FadeInSection({ children, delay = '0ms', className = '' }) {
   const [isVisible, setVisible] = useState(false);
   const domRef = useRef();
+  const { isReducedMotion } = useReducedMotion();
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (prefersReducedMotion.matches) {
+    if (isReducedMotion) {
       setVisible(true);
       return;
     }

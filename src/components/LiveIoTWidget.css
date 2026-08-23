@@ -1,0 +1,66 @@
+.live-iot-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--light-navy, #112240);
+  border: 1px solid var(--lightest-navy, #233554);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: var(--font-mono, 'Fira Code', monospace);
+  font-size: 12px;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.live-iot-widget.offline {
+  opacity: 0.6;
+}
+
+.iot-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-active {
+  color: var(--green, #64ffda);
+  animation: pulse-icon 2s infinite;
+}
+
+.pulse-stopped {
+  color: var(--slate, #8892b0);
+}
+
+.iot-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iot-label {
+  color: var(--light-slate, #a8b2d1);
+  display: flex;
+  align-items: center;
+}
+
+.iot-value {
+  color: var(--green, #64ffda);
+  font-weight: 600;
+}
+
+.offline-text {
+  color: var(--slate, #8892b0);
+  font-weight: normal;
+  font-style: italic;
+}
+
+.iot-time {
+  color: var(--slate, #8892b0);
+  font-size: 11px;
+}
+
+@keyframes pulse-icon {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}

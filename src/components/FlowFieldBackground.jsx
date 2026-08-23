@@ -1,12 +1,12 @@
 import React, { useRef, useEffect } from 'react';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export function FlowFieldBackground() {
   const canvasRef = useRef(null);
+  const { isReducedMotion } = useReducedMotion();
 
   useEffect(() => {
-    const prefersReducedMotion = typeof window !== 'undefined' 
-        ? window.matchMedia('(prefers-reduced-motion: reduce)') 
-        : { matches: false };
+    const isReduced = isReducedMotion;
         
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -107,7 +107,7 @@ export function FlowFieldBackground() {
       }
       
       const targetVel = isHovering ? 1 : 0;
-      currentVelocity = prefersReducedMotion.matches ? targetVel : currentVelocity + (targetVel - currentVelocity) * (1 - Math.exp(-dt / 130));
+      currentVelocity = isReduced ? targetVel : currentVelocity + (targetVel - currentVelocity) * (1 - Math.exp(-dt / 130));
       
       ctx.clearRect(0, 0, width, height);
       ctx.strokeStyle = strokeColor;
@@ -115,7 +115,7 @@ export function FlowFieldBackground() {
       ctx.lineCap = 'butt'; // Crucial for crisp dashes
       ctx.beginPath();
       
-      const phase = prefersReducedMotion.matches ? 0 : (time - hoverStartTime) / 240;
+      const phase = isReduced ? 0 : (time - hoverStartTime) / 240;
       const rippleStrength = currentVelocity > 0.002 ? 0.55 * currentVelocity : 0;
       
       const effectRadius = 600;
@@ -162,13 +162,22 @@ export function FlowFieldBackground() {
         animationFrameId = 0;
         lastHoverEventTime = 0;
         currentVelocity = 0;
-      } else {
+      } else if (document.visibilityState === 'visible') {
         animationFrameId = requestAnimationFrame(render);
+      } else {
+        animationFrameId = 0; // Paused while hidden
       }
     };
 
     const triggerRender = () => {
-      if (!animationFrameId) {
+      if (!animationFrameId && document.visibilityState === 'visible') {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !animationFrameId && (isHovering || currentVelocity > 0.004)) {
+        lastHoverEventTime = performance.now(); // Reset time to avoid huge dt jumps
         animationFrameId = requestAnimationFrame(render);
       }
     };
@@ -208,6 +217,7 @@ export function FlowFieldBackground() {
     window.addEventListener('pointerup', onPointerLeave);
     window.addEventListener('pointerleave', onPointerLeave);
     window.addEventListener('pointercancel', onPointerLeave);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       window.removeEventListener('resize', onResize);
@@ -216,6 +226,7 @@ export function FlowFieldBackground() {
       window.removeEventListener('pointerup', onPointerLeave);
       window.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('pointercancel', onPointerLeave);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, []);

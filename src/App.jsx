@@ -1,25 +1,35 @@
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import SidebarNav from './components/SidebarNav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import GameMode from './components/GameMode';
-import { FlowFieldBackground } from './components/FlowFieldBackground';
-import TerminalEgg from './components/TerminalEgg';
+import ProjectLog from './pages/ProjectLog';
 import './App.css';
+
+const GameMode = lazy(() => import('./components/GameMode'));
+const FlowFieldBackground = lazy(() => import('./components/FlowFieldBackground').then(module => ({ default: module.FlowFieldBackground })));
+const TerminalEgg = lazy(() => import('./components/TerminalEgg'));
+const LiveVisitors = lazy(() => import('./components/LiveVisitors'));
 
 function App() {
   return (
     <div className="app-container">
-      <FlowFieldBackground />
+      <Suspense fallback={null}>
+        <FlowFieldBackground />
+      </Suspense>
       <NavBar />
       <SidebarNav />
-      <GameMode />
-      <TerminalEgg />
+      <Suspense fallback={null}>
+        <GameMode />
+        <TerminalEgg />
+        <LiveVisitors />
+      </Suspense>
       
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/log" element={<ProjectLog />} />
         </Routes>
       </main>
       

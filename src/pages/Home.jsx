@@ -1,13 +1,15 @@
-import { useRef } from 'react';
+import React, { useRef, Suspense, lazy } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { ExternalLink, Code, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FadeInSection } from '../components/FadeInSection';
-import AsciiPortrait from '../components/AsciiPortrait';
 import CanvasText from '../components/CanvasText';
 import PremeasuredTextContainer from '../components/PremeasuredTextContainer';
 import { PartingText } from '../components/PartingText';
-import Art from '../components/Art';
+import LiveSkillChart from '../components/LiveSkillChart';
 import './Home.css';
+
+const AsciiPortrait = lazy(() => import('../components/AsciiPortrait'));
+const Art = lazy(() => import('../components/Art'));
 
 const Home = () => {
   const sliderRef = useRef(null);
@@ -126,7 +128,9 @@ const Home = () => {
         </div>
         <div className="hero-visual">
           <FadeInSection delay="600ms">
-            <AsciiPortrait />
+            <Suspense fallback={<div style={{ width: '400px', height: '400px' }} />}>
+              <AsciiPortrait />
+            </Suspense>
           </FadeInSection>
         </div>
       </section>
@@ -156,6 +160,9 @@ const Home = () => {
                 <div className="about-image-placeholder">
                   <img src="/assets/god.jpeg" alt="Sameer Vishwakarma" className="about-image" />
                 </div>
+             </FadeInSection>
+             <FadeInSection delay="300ms">
+                <LiveSkillChart />
              </FadeInSection>
           </div>
         </div>
@@ -243,7 +250,9 @@ const Home = () => {
         </FadeInSection>
       </section>
       {/* ART SECTION */}
-      <Art />
+      <Suspense fallback={null}>
+        <Art />
+      </Suspense>
     </div>
   );
 };
