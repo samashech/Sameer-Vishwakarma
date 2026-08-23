@@ -1,0 +1,61 @@
+{
+  "basics": {
+    "name": "Sameer Vishwakarma",
+    "label": "Software Engineer",
+    "email": "sameervishwakarmaa12@gmail.com",
+    "summary": "Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. Currently building production IoT and data-visualization projects at RAIoT Labs while leading student teams through hackathons and technical competitions."
+  },
+  "work": [
+    {
+      "name": "RAIoT Labs",
+      "position": "Junior Developer",
+      "location": "Jaipur",
+      "startDate": "2025-01-01",
+      "summary": "Building and deploying IoT hardware/software projects, bridging sensor hardware with full-stack dashboards for real-time data visualization.",
+      "highlights": [
+        "Build and deploy IoT hardware/software projects bridging sensors with full-stack real-time dashboards",
+        "Lead student teams in hackathons, robowars, and autonomous flight competitions",
+        "Maintain and contribute to open-source repos (documentation, code review)"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Languages",
+      "keywords": ["Python", "JavaScript", "TypeScript", "C", "HTML5/CSS", "Rust"]
+    },
+    {
+      "name": "Frameworks & Libraries",
+      "keywords": ["React.js", "Next.js", "Node.js", "FastAPI", "Flask", "Tailwind CSS"]
+    },
+    {
+      "name": "Databases & Cloud",
+      "keywords": ["PostgreSQL (Prisma)", "SQLite", "Redis", "Supabase", "Firebase"]
+    },
+    {
+      "name": "Tools & Machine Learning",
+      "keywords": ["Docker", "Linux", "TensorFlow", "MediaPipe"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Trackly AI — Productivity Platform",
+      "description": "Full-stack productivity app with a Chrome extension that blocks distracting sites when deadlines are missed; integrates Gemini 2.5 Flash vision + language for real-time habit verification.",
+      "url": "https://trackly-eosin.vercel.app/"
+    },
+    {
+      "name": "Align — AI Resume Analyzer",
+      "description": "Matches candidate resumes to live job postings via PyPDF2 parsing + NLP skill extraction, served through a Next.js frontend and Flask API.",
+      "url": "https://align-raiot.web.app"
+    },
+    {
+      "name": "AI Sign Language Translator",
+      "description": "Multi-layer LSTM model translating continuous sign language into text for medical/emergency phrases, processing 1,692 spatial landmarks per 30-frame sequence via MediaPipe."
+    },
+    {
+      "name": "EduRep — Education Transparency Tracker",
+      "description": "Transparency platform tracking education budgets, court mandates, and RTI responses on a custom Prisma/SQLite schema.",
+      "url": "https://edurep.vercel.app"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Sameer Vishwakarma
+
+> Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. Currently building production IoT and data-visualization projects at RAIoT Labs.
+
+## Projects
+- [Trackly AI](https://trackly-eosin.vercel.app/): Full-stack productivity app with Chrome extension, integrating Gemini 2.5 Flash for real-time habit verification.
+- [Align](https://align-raiot.web.app/): AI Resume Analyzer matching candidates to live jobs via PyPDF2 and NLP, built with Next.js and Flask.
+- [AI Sign Language Translator](#): Multi-layer LSTM model translating sign language to text using MediaPipe and Gemini LLM.
+- [EduRep](https://edurep.vercel.app/): Education transparency tracker for budgets and RTI responses using Prisma and SQLite.
+- [NutriLens](#): Dockerized health app pairing a React frontend with an ML backend for nutritional analysis.
+
+## Experience
+**Junior Developer at RAIoT Labs (2025 - Present)**
+Jaipur
+Build and deploy IoT hardware/software projects bridging sensors with full-stack real-time dashboards. Lead student teams in hackathons, robowars, and autonomous flight competitions. Maintain and contribute to open-source repos.

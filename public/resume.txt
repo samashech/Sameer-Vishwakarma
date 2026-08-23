@@ -1,0 +1,30 @@
+Sameer Vishwakarma
+Software Engineer
+sameervishwakarmaa12@gmail.com
+
+> Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. Currently building production IoT and data-visualization projects at RAIoT Labs.
+
+[ EXPERIENCE ]
+Junior Developer @ RAIoT Labs
+2025 - Present | Jaipur
+* Build and deploy IoT hardware/software projects bridging sensors with full-stack real-time dashboards
+* Lead student teams in hackathons, robowars, and autonomous flight competitions
+* Maintain and contribute to open-source repos (documentation, code review)
+
+[ PROJECTS ]
+* Trackly AI — Productivity Platform
+  Full-stack productivity app with a Chrome extension that blocks distracting sites when deadlines are missed; integrates Gemini 2.5 Flash vision + language for real-time habit verification.
+
+* Align — AI Resume Analyzer
+  Matches candidate resumes to live job postings via PyPDF2 parsing + NLP skill extraction, served through a Next.js frontend and Flask API.
+
+* AI Sign Language Translator
+  Multi-layer LSTM model translating continuous sign language into text for medical/emergency phrases, processing 1,692 spatial landmarks per 30-frame sequence via MediaPipe.
+
+* EduRep — Education Transparency Tracker
+  Transparency platform tracking education budgets, court mandates, and RTI responses on a custom Prisma/SQLite schema.
+
+[ SKILLS ]
+Python, JavaScript, TypeScript, C, HTML5/CSS, Rust (basic), React.js, Next.js, Node.js, FastAPI, Flask, Tailwind CSS, PostgreSQL (Prisma), SQLite, Redis, Supabase, Firebase, Docker, Linux, TensorFlow, MediaPipe
+
+EOF

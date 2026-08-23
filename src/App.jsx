@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import GameMode from './components/GameMode';
 import { FlowFieldBackground } from './components/FlowFieldBackground';
+import TerminalEgg from './components/TerminalEgg';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
       <NavBar />
       <SidebarNav />
       <GameMode />
+      <TerminalEgg />
       
       <main className="main-content">
         <Routes>
