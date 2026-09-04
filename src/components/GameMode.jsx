@@ -72,9 +72,12 @@ const GameMode = () => {
     });
   };
 
-  // Cleanup on unmount
+  // Cleanup on unmount & custom event listener
   useEffect(() => {
+    const handleCustomToggle = () => toggleGame();
+    window.addEventListener('toggle-game-mode', handleCustomToggle);
     return () => {
+      window.removeEventListener('toggle-game-mode', handleCustomToggle);
       document.body.classList.remove('game-active');
       cancelAnimationFrame(requestRef.current);
     };
@@ -674,7 +677,10 @@ const GameMode = () => {
       {isActive && (
         <div className="game-overlay">
           <div className="game-hud">
-            Items: {collectibles} / 5
+            <span>Items: {collectibles} / 5</span>
+            <button className="game-hud-exit-btn" onClick={toggleGame} aria-label="Exit Game">
+              ✕ Exit
+            </button>
           </div>
           <canvas ref={canvasRef} className="game-canvas" />
           

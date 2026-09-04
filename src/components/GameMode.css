@@ -92,9 +92,31 @@
   left: 40px;
   font-family: Menlo, Consolas, Monaco, 'Courier New', monospace;
   color: var(--yellow);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   text-shadow: 1px 1px 2px var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 902;
+  pointer-events: auto;
+}
+
+.game-hud-exit-btn {
+  background: rgba(17, 34, 64, 0.9);
+  color: var(--green-bright);
+  border: 1px solid var(--green-bright);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.2s;
+}
+
+.game-hud-exit-btn:hover {
+  background: var(--green-tint);
 }
 
 .game-modal {
@@ -182,39 +204,45 @@
 
 @media (max-width: 768px) {
   .game-toggle-container {
-    top: 20px;
-    right: 70px;
-    gap: 6px;
-    z-index: 1001;
-  }
-  .game-toggle-btn {
-    padding: 6px 12px;
-    font-size: 11px;
-    min-height: 38px;
+    display: none; /* Hide floating toggle from navbar on mobile; launched via mobile drawer */
   }
   .game-hud {
-    top: 75px;
-    left: 20px;
-    font-size: 15px;
+    top: 70px;
+    left: 18px;
+    font-size: 13.5px;
+    gap: 10px;
+  }
+  .game-hud-exit-btn {
+    font-size: 11px;
+    padding: 2px 8px;
   }
   .game-info-tooltip {
-    right: -40px;
+    right: -20px;
     top: 36px;
-    width: 220px;
-    font-size: 12px;
-    padding: 12px;
+    width: 200px;
+    font-size: 11.5px;
+    padding: 10px;
   }
   .game-modal {
-    width: 90%;
-    max-width: 320px;
-    padding: 28px 16px;
+    width: 88%;
+    max-width: 300px;
+    padding: 22px 14px;
   }
   .game-modal h2 {
-    font-size: 24px;
-    margin-bottom: 12px;
+    font-size: 22px;
+    margin-bottom: 10px;
   }
   .touch-controls {
-    bottom: max(16px, env(safe-area-inset-bottom));
-    padding: 0 16px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    padding: 0 14px;
+  }
+  .touch-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+  }
+  .touch-btn.jump {
+    width: 68px;
+    font-size: 13px;
   }
 }

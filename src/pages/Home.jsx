@@ -88,9 +88,8 @@ const Home = () => {
             <h1 className="hero-greeting">
               <CanvasText 
                 text="Hi, my name is" 
-                font="normal 16px Menlo, Consolas, Monaco, 'Courier New', monospace" 
+                font="inherit"
                 color="var(--green-bright)" 
-                lineHeight={24}
               />
             </h1>
           </FadeInSection>
@@ -115,9 +114,8 @@ const Home = () => {
             <div className="hero-bio">
               <CanvasText 
                 text="Software engineer building full-stack web apps, AI-integrated tools, and IoT systems. Currently building production IoT and data-visualization projects at RAIoT Labs while leading student teams through hackathons and technical competitions."
-                font="normal 18px Calibre, Inter, San Francisco, SF Pro Text, -apple-system, system-ui, sans-serif"
+                font="inherit"
                 color="var(--slate)"
-                lineHeight={28}
                 delay={200}
               />
             </div>
@@ -128,7 +126,7 @@ const Home = () => {
         </div>
         <div className="hero-visual">
           <FadeInSection delay="600ms">
-            <Suspense fallback={<div style={{ width: '100%', maxWidth: '400px', aspectRatio: '1 / 1' }} />}>
+            <Suspense fallback={<div style={{ width: '100%', maxWidth: '380px', aspectRatio: '1 / 1' }} />}>
               <AsciiPortrait />
             </Suspense>
           </FadeInSection>
@@ -214,8 +212,7 @@ const Home = () => {
                   <PremeasuredTextContainer 
                     className="project-desc"
                     text={project.desc}
-                    font="normal 16px Calibre, Inter, San Francisco, SF Pro Text, -apple-system, system-ui, sans-serif"
-                    lineHeight={24}
+                    font="inherit"
                   >
                     <p>{project.desc}</p>
                   </PremeasuredTextContainer>

@@ -25,15 +25,16 @@ body.game-active .live-visitors-pill {
 
 @media (max-width: 768px) {
   .live-visitors-pill {
-    bottom: max(14px, env(safe-area-inset-bottom));
-    right: max(14px, env(safe-area-inset-right));
-    font-size: 10px;
-    padding: 5px 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    right: max(10px, env(safe-area-inset-right));
+    font-size: 9.5px;
+    padding: 3.5px 8px;
+    border-radius: 12px;
   }
 }
 
 .live-visitors-icon {
-  color: var(--green);
+  color: var(--green-bright, #64ffda);
   animation: pulse-presence 3s infinite;
 }
 

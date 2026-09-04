@@ -86,22 +86,22 @@ const LiveSkillChart = () => {
     <div className="live-skill-chart-container">
       <h3 className="chart-title">Recent Language Usage</h3>
       <div className="chart-wrapper">
-        <ResponsiveContainer width="100%" height={280}>
-          <RadarChart cx="50%" cy="50%" outerRadius="54%" data={data}>
+        <ResponsiveContainer width="100%" height={240}>
+          <RadarChart cx="50%" cy="50%" outerRadius="55%" data={data}>
             <PolarGrid stroke="var(--lightest-navy)" />
             <PolarAngleAxis 
               dataKey="name" 
-              tick={{ fill: 'var(--light-slate)', fontSize: 10.5, fontFamily: 'var(--font-mono, monospace)' }} 
+              tick={{ fill: 'var(--light-slate)', fontSize: 10, fontFamily: 'var(--font-mono, monospace)' }} 
             />
             <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Radar
               name="Skills"
               dataKey="value"
-              stroke="var(--green)"
+              stroke="var(--green-bright, #64ffda)"
               strokeWidth={2}
-              fill="var(--green)"
-              fillOpacity={0.25}
+              fill="var(--green-bright, #64ffda)"
+              fillOpacity={0.2}
             />
           </RadarChart>
         </ResponsiveContainer>

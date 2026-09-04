@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Mail, Eye, EyeOff, Terminal } from 'lucide-react';
+import { Menu, X, Mail, Eye, EyeOff, Terminal, Gamepad2 } from 'lucide-react';
 import { GithubIcon, InstagramIcon } from './Icons';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import './NavBar.css';
@@ -153,6 +153,18 @@ const NavBar = () => {
           >
             <Terminal size={18} />
             <span>Terminal CLI</span>
+          </button>
+
+          <button 
+            className="mobile-utility-btn"
+            onClick={() => {
+              setIsOpen(false);
+              window.dispatchEvent(new CustomEvent('toggle-game-mode'));
+            }}
+            aria-label="Toggle Game Mode"
+          >
+            <Gamepad2 size={18} />
+            <span>Play Game</span>
           </button>
         </div>
 

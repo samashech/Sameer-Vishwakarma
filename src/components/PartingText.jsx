@@ -19,18 +19,11 @@ export function PartingText({ className, text }) {
 
     const ctx = canvas.getContext('2d');
     
-    const computedStyle = window.getComputedStyle(textNode);
-    const resolvedFont = `${computedStyle.fontWeight} ${computedStyle.fontSize} ${computedStyle.fontFamily}`;
-    const resolvedLineHeightPx = parseFloat(computedStyle.lineHeight) || parseInt(computedStyle.fontSize) * 1.5;
-    const resolvedColor = computedStyle.color;
-
-    let prepared;
-    try {
-      prepared = prepareWithSegments(text, resolvedFont);
-    } catch (e) {
-      console.error(e);
-      return;
-    }
+    let resolvedFont = '';
+    let resolvedLineHeightPx = 24;
+    let resolvedColor = 'var(--slate)';
+    let prepared = null;
+    let lastFont = '';
 
     let width = container.clientWidth;
     const dpr = window.devicePixelRatio || 1;
@@ -40,6 +33,23 @@ export function PartingText({ className, text }) {
 
     const updateCanvasSize = () => {
       width = container.clientWidth;
+      const computedStyle = window.getComputedStyle(textNode);
+      resolvedFont = `${computedStyle.fontWeight} ${computedStyle.fontSize} ${computedStyle.fontFamily}`;
+      resolvedLineHeightPx = parseFloat(computedStyle.lineHeight) || (parseFloat(computedStyle.fontSize) * 1.5);
+      resolvedColor = computedStyle.color;
+
+      if (resolvedFont !== lastFont) {
+        lastFont = resolvedFont;
+        try {
+          prepared = prepareWithSegments(text, resolvedFont);
+        } catch (e) {
+          console.error(e);
+          return;
+        }
+      }
+
+      if (!prepared) return;
+
       let lineCount = 0;
       let cursor = { segmentIndex: 0, graphemeIndex: 0 };
       defaultLines = [];

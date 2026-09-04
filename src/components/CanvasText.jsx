@@ -4,9 +4,9 @@ import { prepareWithSegments, layoutWithLines } from '@chenglou/pretext';
 const CanvasText = ({ 
   text, 
   className, 
-  font = '16px monospace', 
+  font = 'inherit', 
   color = 'var(--light-slate)',
-  lineHeight = 24,
+  lineHeight,
   delay = 0,
   align = 'left' 
 }) => {
@@ -14,6 +14,41 @@ const CanvasText = ({
   const containerRef = useRef(null);
   const [isSupported, setIsSupported] = useState(true);
   const preparedRef = useRef(null);
+  const lastFontRef = useRef('');
+
+  const getResolvedStyles = () => {
+    if (!containerRef.current) {
+      return {
+        resolvedFont: font && font !== 'inherit' ? font : 'normal 16px sans-serif',
+        resolvedLineHeight: lineHeight || 24,
+        resolvedColor: color
+      };
+    }
+    const cs = window.getComputedStyle(containerRef.current);
+    let resolvedFont = font;
+    let resolvedLineHeight = lineHeight;
+
+    if (!font || font === 'inherit') {
+      const weight = cs.fontWeight || 'normal';
+      const size = cs.fontSize || '16px';
+      const family = cs.fontFamily || 'sans-serif';
+      resolvedFont = `${weight} ${size} ${family}`;
+    }
+
+    if (!resolvedLineHeight) {
+      resolvedLineHeight = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.5) || 24;
+    }
+
+    let fillStyle = color;
+    if (color && color.startsWith('var(')) {
+      const varName = color.slice(4, -1);
+      fillStyle = cs.getPropertyValue(varName).trim() || 
+                  getComputedStyle(document.body).getPropertyValue(varName).trim() || 
+                  color;
+    }
+
+    return { resolvedFont, resolvedLineHeight, resolvedColor: fillStyle };
+  };
 
   useEffect(() => {
     // Check support
@@ -23,21 +58,24 @@ const CanvasText = ({
       return;
     }
 
+    const { resolvedFont, resolvedLineHeight, resolvedColor } = getResolvedStyles();
     try {
-      preparedRef.current = prepareWithSegments(text, font);
+      preparedRef.current = prepareWithSegments(text, resolvedFont);
+      lastFontRef.current = resolvedFont;
     } catch (e) {
       setIsSupported(false);
       return;
     }
 
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: true });
     let animationFrame;
     const startTime = Date.now();
 
     const render = () => {
       const container = containerRef.current;
-      if (!container || !preparedRef.current) return;
+      if (!container) return;
       
       const width = container.clientWidth;
       if (width === 0) {
@@ -45,10 +83,20 @@ const CanvasText = ({
         return;
       }
 
+      const styles = getResolvedStyles();
+      if (styles.resolvedFont !== lastFontRef.current) {
+        try {
+          preparedRef.current = prepareWithSegments(text, styles.resolvedFont);
+          lastFontRef.current = styles.resolvedFont;
+        } catch (e) {}
+      }
+
+      if (!preparedRef.current) return;
+
       // 1. layoutWithLines
-      const layoutResult = layoutWithLines(preparedRef.current, width, lineHeight);
+      const layoutResult = layoutWithLines(preparedRef.current, width, styles.resolvedLineHeight);
       const lines = Array.isArray(layoutResult) ? layoutResult : (layoutResult.lines || []);
-      const totalHeight = layoutResult.height || (lines.length * lineHeight);
+      const totalHeight = layoutResult.height || (lines.length * styles.resolvedLineHeight);
 
       const dpr = Math.min(window.devicePixelRatio || 1, 3);
       canvas.width = Math.round(width * dpr);
@@ -58,14 +106,8 @@ const CanvasText = ({
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, totalHeight);
-      ctx.font = font;
-      
-      let fillStyle = color;
-      if (color.startsWith('var(')) {
-        const varName = color.slice(4, -1);
-        fillStyle = getComputedStyle(document.body).getPropertyValue(varName).trim() || fillStyle;
-      }
-      ctx.fillStyle = fillStyle;
+      ctx.font = styles.resolvedFont;
+      ctx.fillStyle = styles.resolvedColor;
       ctx.textBaseline = 'top';
 
       const computedTextAlign = getComputedStyle(container).textAlign;
@@ -99,7 +141,7 @@ const CanvasText = ({
             const metrics = ctx.measureText(lineText);
             x = Math.max(0, (width - metrics.width) / 2);
           }
-          ctx.fillText(lineText, x, index * lineHeight + yOffset);
+          ctx.fillText(lineText, x, index * styles.resolvedLineHeight + yOffset);
         }
       });
 
@@ -112,7 +154,7 @@ const CanvasText = ({
 
     const observer = new ResizeObserver(() => {
       if (animationFrame) cancelAnimationFrame(animationFrame);
-      render(); // this will also restart the animation if needed, but we could just draw it statically
+      render();
     });
     
     if (containerRef.current) {
