@@ -105,45 +105,105 @@ const GameMode = () => {
     setCollectibles(0);
     player.current = { ...player.current, x: 50, y: window.scrollY + 100, vx: 0, vy: 0, isGrounded: false };
     
-    const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, .section-title, .intro-heading, .job-title, .company-name, .card-title, .footer-credit, .project-card h3';
+    const targetSelectors = 'h1, h2, h3, h4, h5, h6, p, li, a.btn, button.btn, .section-heading, .job-title, .job-date, .project-title, .skill-pill';
     
-    let pretextAvailable = typeof prepare === 'function';
-    try { if (pretextAvailable) prepare('test', '12px Arial'); } 
-    catch (e) { pretextAvailable = false; }
-    
+    const mergeLineRects = (rects) => {
+      if (!rects.length) return [];
+      const sorted = [...rects].sort((a, b) => (a.top - b.top) || (a.left - b.left));
+      const merged = [];
+
+      for (const r of sorted) {
+        const last = merged[merged.length - 1];
+        if (last && Math.abs(last.top - r.top) < 8 && r.left <= last.right + 20) {
+          const newLeft = Math.min(last.left, r.left);
+          const newRight = Math.max(last.right, r.left + r.width);
+          const newTop = Math.min(last.top, r.top);
+          const newBottom = Math.max(last.bottom, r.top + r.height);
+          last.left = newLeft;
+          last.right = newRight;
+          last.top = newTop;
+          last.bottom = newBottom;
+          last.width = newRight - newLeft;
+          last.height = newBottom - newTop;
+        } else {
+          merged.push({
+            left: r.left,
+            top: r.top,
+            right: r.left + r.width,
+            bottom: r.top + r.height,
+            width: r.width,
+            height: r.height
+          });
+        }
+      }
+      return merged;
+    };
+
     const buildRegistry = () => {
-      textElementsRef.current = Array.from(document.querySelectorAll(targetSelectors));
+      const rawElements = Array.from(document.querySelectorAll(targetSelectors));
       
-      domPlatformsRegistry.current = textElementsRef.current.map(el => {
+      const validElements = rawElements.filter(el => {
+        if (el.closest('nav, header, .game-hud, .game-toggle-container, .game-mode-canvas, .slider-btn')) {
+          return false;
+        }
+        const hasMatchingChild = rawElements.some(child => child !== el && el.contains(child));
+        if (hasMatchingChild) {
+          return false;
+        }
         const style = window.getComputedStyle(el);
-        const rect = el.getBoundingClientRect();
-        
-        let width = rect.width;
-        let height = rect.height;
-        
-        if (pretextAvailable) {
-           const font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-           try {
-             const prepared = prepare(el.textContent || '', font);
-             const lh = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
-             const layoutResult = layout(prepared, width, lh);
-             if (layoutResult && typeof layoutResult.height !== 'undefined') {
-                height = layoutResult.height;
-             }
-           } catch(e) {}
+        if (style.display === 'none' || style.visibility === 'hidden') {
+          return false;
         }
-        
-        if (width >= 60 && height <= 100) {
-           return {
-             el,
-             x: rect.left,
-             y: rect.top + window.scrollY,
-             width,
-             height: 10 // collision height
-           };
+        if (style.opacity === '0' && !el.closest('.about-text')) {
+          return false;
         }
-        return null;
-      }).filter(Boolean);
+        return true;
+      });
+
+      const platforms = [];
+      const scrollX = window.scrollX || window.pageXOffset || 0;
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+
+      for (const el of validElements) {
+        let lineRects = [];
+        try {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const rawRects = Array.from(range.getClientRects());
+          if (rawRects.length > 0) {
+            lineRects = mergeLineRects(rawRects);
+          }
+        } catch (e) {
+          lineRects = [];
+        }
+
+        if (lineRects.length === 0) {
+          const bRect = el.getBoundingClientRect();
+          if (bRect.width >= 35 && bRect.height >= 8) {
+            lineRects = [{
+              left: bRect.left,
+              top: bRect.top,
+              width: bRect.width,
+              height: bRect.height
+            }];
+          }
+        }
+
+        for (const lr of lineRects) {
+          if (lr.width >= 35 && lr.height >= 8) {
+            platforms.push({
+              el,
+              x: lr.left + scrollX,
+              y: lr.top + scrollY,
+              width: lr.width,
+              height: 10
+            });
+          }
+        }
+      }
+
+      platforms.sort((a, b) => a.y - b.y);
+      domPlatformsRegistry.current = platforms;
     };
 
     buildRegistry();
@@ -320,30 +380,12 @@ const GameMode = () => {
       }, 100);
     };
     
-    let scrollTimer;
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          domPlatformsRegistry.current.forEach(plat => {
-            const rect = plat.el.getBoundingClientRect();
-            plat.x = rect.left;
-            plat.y = rect.top + window.scrollY;
-          });
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(requestRef.current);
       if (typeof clearCache === 'function') clearCache();
     };
@@ -471,27 +513,37 @@ const GameMode = () => {
       let wasGrounded = p.isGrounded;
       p.isGrounded = false;
       const allPlatforms = [...domPlatforms.current, ...generatedPlatforms.current];
-      
-      for (let plat of allPlatforms) {
-        // Only check collision if falling down
-        if (p.vy > 0) {
-          // Swept collision: check if bottom crosses platform top this frame
-          if (
-            prevY + p.height <= plat.y + 5 && // was above (with slight margin)
-            p.y + p.height >= plat.y &&       // is below or touching
-            p.x + p.width > plat.x &&         // within x bounds
-            p.x < plat.x + plat.width
-          ) {
-            p.y = plat.y - p.height;
-            p.vy = 0;
-            p.isGrounded = true;
-            p.coyoteTimer = p.maxCoyoteTime;
-            
-            if (!wasGrounded) {
-              // Landing juice
-              p.scaleX = 1.4;
-              p.scaleY = 0.6;
-              p.squashTimer = 150;
+      allPlatforms.sort((a, b) => a.y - b.y);
+
+      const dropDownHeld = keys.current.ArrowDown || keys.current.s;
+
+      if (wasGrounded && dropDownHeld) {
+        p.isGrounded = false;
+        p.y += 2;
+        p.vy = 120;
+      } else {
+        for (let plat of allPlatforms) {
+          // Only check collision if falling down and not dropping through
+          if (p.vy > 0 && !dropDownHeld) {
+            // Swept collision: check if bottom crosses platform top this frame
+            if (
+              prevY + p.height <= plat.y + 6 && // was above (with slight margin)
+              p.y + p.height >= plat.y &&       // is below or touching
+              p.x + p.width > plat.x &&         // within x bounds
+              p.x < plat.x + plat.width
+            ) {
+              p.y = plat.y - p.height;
+              p.vy = 0;
+              p.isGrounded = true;
+              p.coyoteTimer = p.maxCoyoteTime;
+              
+              if (!wasGrounded) {
+                // Landing juice
+                p.scaleX = 1.4;
+                p.scaleY = 0.6;
+                p.squashTimer = 150;
+              }
+              break; // Land on highest crossed platform
             }
           }
         }
