@@ -22,8 +22,16 @@ const TerminalEgg = () => {
         setIsOpen((prev) => !prev);
       }
     };
+    const handleCustomToggle = () => {
+      setIsOpen((prev) => !prev);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('toggle-terminal', handleCustomToggle);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('toggle-terminal', handleCustomToggle);
+    };
   }, []);
 
   useEffect(() => {
@@ -138,6 +146,21 @@ const TerminalEgg = () => {
               spellCheck="false"
               autoComplete="off"
             />
+          </div>
+          <div className="terminal-quick-chips">
+            {['whoami', 'skills', 'projects', 'clear', 'exit'].map((cmd) => (
+              <button
+                key={cmd}
+                type="button"
+                className="terminal-chip"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCommand(cmd);
+                }}
+              >
+                {cmd}
+              </button>
+            ))}
           </div>
           <div ref={terminalEndRef} />
         </div>

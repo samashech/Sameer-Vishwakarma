@@ -73,7 +73,11 @@ const PremeasuredTextContainer = ({
     <div 
       ref={containerRef} 
       className={className} 
-      style={isSupported && containerHeight !== undefined ? { height: `${containerHeight}px`, overflow: 'hidden' } : {}}
+      style={isSupported && containerHeight !== undefined ? { 
+        minHeight: `${containerHeight}px`, 
+        height: contentLoaded ? 'auto' : `${containerHeight}px`, 
+        overflow: contentLoaded ? 'visible' : 'hidden' 
+      } : {}}
     >
       {contentLoaded ? children : (
         <div style={{ 

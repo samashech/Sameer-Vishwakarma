@@ -63,3 +63,10 @@
   border-radius: 8px;
   border: 1px dashed var(--lightest-navy);
 }
+
+@media (max-width: 480px) {
+  .live-skill-chart-container {
+    padding: 16px 8px;
+    margin-top: 25px;
+  }
+}

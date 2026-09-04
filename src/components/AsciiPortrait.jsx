@@ -248,13 +248,13 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
     
     loadImageAndSample();
 
-    const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const handleMouseMove = (e) => {
-      if (isTouchDevice()) return;
       const rect = canvas.getBoundingClientRect();
+      const scaleX = width / rect.width;
+      const scaleY = height / rect.height;
       mouseRef.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
         radius: 80
       };
     };
@@ -263,14 +263,39 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
       mouseRef.current = { x: -1000, y: -1000, radius: 80 };
     };
 
+    const handleTouchMove = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const scaleX = width / rect.width;
+      const scaleY = height / rect.height;
+      mouseRef.current = {
+        x: (touch.clientX - rect.left) * scaleX,
+        y: (touch.clientY - rect.top) * scaleY,
+        radius: 70
+      };
+    };
+
+    const handleTouchEnd = () => {
+      mouseRef.current = { x: -1000, y: -1000, radius: 80 };
+    };
+
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('touchstart', handleTouchMove, { passive: true });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
+    canvas.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
       isCancelled = true;
       cancelAnimationFrame(requestRef.current);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('touchstart', handleTouchMove);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchcancel', handleTouchEnd);
     };
   }, [width, height]);
 
@@ -279,7 +304,7 @@ const AsciiPortrait = ({ width = 400, height = 400 }) => {
       ref={canvasRef} 
       width={width} 
       height={height}
-      style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+      style={{ display: 'block', maxWidth: '100%', height: 'auto', touchAction: 'pan-y' }}
     />
   );
 };

@@ -7,7 +7,8 @@ const CanvasText = ({
   font = '16px monospace', 
   color = 'var(--light-slate)',
   lineHeight = 24,
-  delay = 0 
+  delay = 0,
+  align = 'left' 
 }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -49,10 +50,14 @@ const CanvasText = ({
       const lines = Array.isArray(layoutResult) ? layoutResult : (layoutResult.lines || []);
       const totalHeight = layoutResult.height || (lines.length * lineHeight);
 
-      canvas.width = width;
-      canvas.height = totalHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(totalHeight * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${totalHeight}px`;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, totalHeight);
       ctx.font = font;
       
       let fillStyle = color;
@@ -62,6 +67,9 @@ const CanvasText = ({
       }
       ctx.fillStyle = fillStyle;
       ctx.textBaseline = 'top';
+
+      const computedTextAlign = getComputedStyle(container).textAlign;
+      const isCentered = align === 'center' || computedTextAlign === 'center';
       
       const elapsed = Date.now() - startTime;
       let allDone = true;
@@ -86,7 +94,12 @@ const CanvasText = ({
         
         if (alpha > 0) {
           ctx.globalAlpha = alpha;
-          ctx.fillText(lineText, 0, index * lineHeight + yOffset);
+          let x = 0;
+          if (isCentered) {
+            const metrics = ctx.measureText(lineText);
+            x = Math.max(0, (width - metrics.width) / 2);
+          }
+          ctx.fillText(lineText, x, index * lineHeight + yOffset);
         }
       });
 
@@ -110,7 +123,7 @@ const CanvasText = ({
       observer.disconnect();
       cancelAnimationFrame(animationFrame);
     };
-  }, [text, font, lineHeight, color, delay]);
+  }, [text, font, lineHeight, color, delay, align]);
 
   if (!isSupported) {
     return <span className={className}>{text}</span>;

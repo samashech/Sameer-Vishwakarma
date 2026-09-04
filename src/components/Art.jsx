@@ -97,12 +97,12 @@ const Art = () => {
 
       {selectedPiece && (
         <div className="art-modal-overlay" onClick={closeModal} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEndEvent}>
-          <button className="modal-close" onClick={closeModal}>
-            <X size={32} />
+          <button className="modal-close" onClick={closeModal} aria-label="Close modal">
+            <X size={24} />
           </button>
           
-          <button className="modal-prev" onClick={showPrev}>
-            <ChevronLeft size={48} />
+          <button className="modal-prev" onClick={showPrev} aria-label="Previous artwork">
+            <ChevronLeft size={28} />
           </button>
           
           <div className="art-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -117,8 +117,8 @@ const Art = () => {
             </div>
           </div>
           
-          <button className="modal-next" onClick={showNext}>
-            <ChevronRight size={48} />
+          <button className="modal-next" onClick={showNext} aria-label="Next artwork">
+            <ChevronRight size={28} />
           </button>
         </div>
       )}

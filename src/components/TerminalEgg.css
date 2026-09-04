@@ -96,7 +96,56 @@
   border: none;
   color: #e6f1ff;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 14px;
   outline: none;
   padding: 0;
+}
+
+.terminal-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #233554;
+}
+
+.terminal-chip {
+  background: #112240;
+  border: 1px solid #233554;
+  color: #64ffda;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.terminal-chip:hover,
+.terminal-chip:active {
+  background: rgba(100, 255, 218, 0.1);
+  border-color: #64ffda;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .terminal-window {
+    width: 94%;
+    max-height: 75vh;
+    height: 380px;
+  }
+  .terminal-content {
+    padding: 12px;
+    font-size: 13px;
+  }
+  .terminal-input {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  }
+  .terminal-close {
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+  }
 }

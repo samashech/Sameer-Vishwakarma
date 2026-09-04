@@ -67,20 +67,50 @@
 
 @media (max-width: 900px) {
   .hero-section {
-  position: relative;
+    position: relative;
     flex-direction: column;
     justify-content: center;
-    padding-top: 100px;
+    padding: 100px 0 50px;
+    min-height: auto;
   }
   .hero-content {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
     text-align: center;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .hero-bio {
+    margin: 0 auto 35px;
   }
   .hero-visual {
-  z-index: 1;
-  position: relative;
-    margin-top: 50px;
+    z-index: 1;
+    position: relative;
+    margin-top: 40px;
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 85px 0 35px;
+  }
+  .hero-name {
+    font-size: clamp(32px, 9vw, 48px);
+  }
+  .hero-subtitle {
+    font-size: clamp(20px, 6vw, 30px);
+    min-height: 52px;
+    margin-bottom: 20px;
+  }
+  .hero-bio {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+  .hero-btn {
+    padding: 0.9rem 1.4rem;
+    font-size: 15px;
   }
 }
 
@@ -170,6 +200,15 @@
 @media (max-width: 768px) {
   .about-content {
     grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .about-image-wrapper {
+    max-width: 420px;
+    width: 100%;
+  }
+  .about-image-placeholder {
+    max-width: 250px;
+    margin: 0 auto;
   }
 }
 
@@ -264,6 +303,7 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none; /* Hide scrollbar for Firefox */
   -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  -webkit-overflow-scrolling: touch;
 }
 
 .projects-slider::-webkit-scrollbar {
@@ -391,9 +431,51 @@
   margin-top: 10px;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .slider-btn {
+    width: 38px;
+    height: 38px;
+    background-color: rgba(17, 34, 64, 0.9);
+  }
+  .slider-btn.left {
+    left: -8px;
+  }
+  .slider-btn.right {
+    right: -8px;
+  }
   .project-card {
     min-width: 280px;
-    max-width: 100%;
+    width: 82vw;
+    max-width: 360px;
+  }
+  .project-content {
+    padding: 20px 16px;
+  }
+  .project-title {
+    font-size: 19px;
+  }
+  .project-image {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .projects-slider {
+    gap: 14px;
+    padding-bottom: 12px;
+  }
+  .project-card {
+    min-width: 260px;
+    width: 84vw;
+  }
+  .slider-btn.left {
+    left: -4px;
+  }
+  .slider-btn.right {
+    right: -4px;
+  }
+  .other-projects-list li {
+    padding: 12px;
+    font-size: 14px;
   }
 }

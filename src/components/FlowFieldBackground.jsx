@@ -15,7 +15,8 @@ export function FlowFieldBackground() {
     if (!ctx) return;
 
     // Parameters matching the exact math from the reference site
-    const gridSize = 14;
+    const isMobile = window.innerWidth < 768;
+    const gridSize = isMobile ? 18 : 14;
     const maxDash = 13;
     const minDash = 2;
     const lineWidth = 1.4;
@@ -231,6 +232,8 @@ export function FlowFieldBackground() {
     };
   }, []);
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <canvas 
       ref={canvasRef} 
@@ -238,10 +241,12 @@ export function FlowFieldBackground() {
         position: 'fixed', 
         top: 0, 
         right: 0, 
-        width: '45vw', 
+        width: isMobile ? '100vw' : '45vw', 
         height: '100vh', 
+        height: '100dvh',
         pointerEvents: 'none', 
-        zIndex: -1
+        zIndex: -1,
+        opacity: isMobile ? 0.75 : 1
       }} 
     />
   );

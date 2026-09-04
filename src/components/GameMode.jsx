@@ -9,16 +9,10 @@ const GameMode = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [gameState, setGameState] = useState('playing'); // playing, won, lost
   const [collectibles, setCollectibles] = useState(0);
-  const [isMobileScreen, setIsMobileScreen] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    setIsMobileScreen(window.innerWidth < 360);
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    
-    const handleResize = () => setIsMobileScreen(window.innerWidth < 360);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   
@@ -70,9 +64,9 @@ const GameMode = () => {
     setIsActive(prev => {
       const next = !prev;
       if (next) {
-        document.body.style.overflow = "hidden";
+        document.body.classList.add('game-active');
       } else {
-        document.body.style.overflow = "unset";
+        document.body.classList.remove('game-active');
       }
       return next;
     });
@@ -81,10 +75,21 @@ const GameMode = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.classList.remove('game-active');
       cancelAnimationFrame(requestRef.current);
     };
   }, []);
+
+  // Prevent user touch dragging while in game mode so camera tracking works smoothly
+  useEffect(() => {
+    if (!isActive) return;
+    const preventScroll = (e) => {
+      if (e.target.closest('.touch-controls') || e.target.closest('.game-toggle-container') || e.target.closest('.game-modal')) return;
+      e.preventDefault();
+    };
+    window.addEventListener('touchmove', preventScroll, { passive: false });
+    return () => window.removeEventListener('touchmove', preventScroll);
+  }, [isActive]);
 
   const isJumpKey = (e) => ['ArrowUp', 'KeyW', 'Space'].includes(e.code) || ['w', 'ArrowUp', ' '].includes(e.key);
   const isMovementKey = (e) => ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'Space'].includes(e.code) || ['a', 'd', 'w', 's', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key);
@@ -625,14 +630,6 @@ const GameMode = () => {
     return null;
   }
 
-  if (isMobileScreen) {
-    return (
-      <div className="game-toggle-container">
-        <span className="game-too-small">Screen too small for game</span>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="game-toggle-container">
@@ -640,6 +637,7 @@ const GameMode = () => {
           className="game-toggle-btn"
           onClick={toggleGame}
           title={isActive ? "Exit Game Mode" : "Play Game Mode"}
+          aria-label={isActive ? "Exit Game Mode" : "Play Game Mode"}
         >
           <Gamepad2 size={20} />
           {isActive ? 'EXIT GAME' : 'PLAY'}
@@ -649,13 +647,24 @@ const GameMode = () => {
             className="game-info-icon"
             onMouseEnter={() => setShowInfo(true)}
             onMouseLeave={() => setShowInfo(false)}
+            onClick={() => setShowInfo(prev => !prev)}
+            aria-label="Game Instructions"
           >
             <Info size={16} />
             {showInfo && (
               <div className="game-info-tooltip">
-                <p>Controls: Arrows / WASD to move.</p>
-                <p>Space to jump. Hold to jump higher.</p>
-                <p>Jump on page elements! Collect 5 yellow blocks to win.</p>
+                {isTouchDevice ? (
+                  <>
+                    <p>Controls: Use onscreen buttons ← → to run, JUMP to leap.</p>
+                    <p>Bounce on headings and text! Collect 5 yellow blocks to win.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Controls: Arrows / WASD to move.</p>
+                    <p>Space to jump. Hold to jump higher.</p>
+                    <p>Jump on page elements! Collect 5 yellow blocks to win.</p>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -669,18 +678,50 @@ const GameMode = () => {
           </div>
           <canvas ref={canvasRef} className="game-canvas" />
           
-          
-      {isTouchDevice && isActive && gameState === 'playing' && (
-        <div className="touch-controls">
-          <div className="dpad">
-            <button className="touch-btn" onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowLeft = true; }} onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowLeft = false; }} onPointerCancel={(e) => { keys.current.ArrowLeft = false; }}>←</button>
-            <button className="touch-btn" onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowRight = true; }} onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowRight = false; }} onPointerCancel={(e) => { keys.current.ArrowRight = false; }}>→</button>
-          </div>
-          <div className="action-buttons">
-            <button className="touch-btn jump" onPointerDown={(e) => { e.preventDefault(); keys.current.Space = true; player.current.jumpBufferTimer = player.current.maxJumpBuffer; }} onPointerUp={(e) => { e.preventDefault(); keys.current.Space = false; player.current.isJumping = false; if (player.current.vy < 0) player.current.vy *= 0.4; }} onPointerCancel={(e) => { keys.current.Space = false; }}>JUMP</button>
-          </div>
-        </div>
-      )}
+          {isTouchDevice && isActive && gameState === 'playing' && (
+            <div className="touch-controls">
+              <div className="dpad">
+                <button 
+                  className="touch-btn" 
+                  onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowLeft = true; }} 
+                  onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowLeft = false; }} 
+                  onPointerCancel={(e) => { keys.current.ArrowLeft = false; }}
+                  aria-label="Move left"
+                >
+                  ←
+                </button>
+                <button 
+                  className="touch-btn" 
+                  onPointerDown={(e) => { e.preventDefault(); keys.current.ArrowRight = true; }} 
+                  onPointerUp={(e) => { e.preventDefault(); keys.current.ArrowRight = false; }} 
+                  onPointerCancel={(e) => { keys.current.ArrowRight = false; }}
+                  aria-label="Move right"
+                >
+                  →
+                </button>
+              </div>
+              <div className="action-buttons">
+                <button 
+                  className="touch-btn jump" 
+                  onPointerDown={(e) => { 
+                    e.preventDefault(); 
+                    keys.current.Space = true; 
+                    player.current.jumpBufferTimer = player.current.maxJumpBuffer; 
+                  }} 
+                  onPointerUp={(e) => { 
+                    e.preventDefault(); 
+                    keys.current.Space = false; 
+                    player.current.isJumping = false; 
+                    if (player.current.vy < 0) player.current.vy *= 0.4; 
+                  }} 
+                  onPointerCancel={(e) => { keys.current.Space = false; }}
+                  aria-label="Jump"
+                >
+                  JUMP
+                </button>
+              </div>
+            </div>
+          )}
 
           {gameState !== 'playing' && (
             <div className="game-modal fade-in">
@@ -695,7 +736,7 @@ const GameMode = () => {
                 {gameState === 'won' ? 'play again' : 'try again'}
               </button>
               <p style={{ color: 'var(--slate)', marginTop: '15px', fontSize: '12px', fontFamily: 'monospace' }}>
-                (press Space to restart)
+                {isTouchDevice ? '(or tap button above)' : '(press Space to restart)'}
               </p>
             </div>
           )}

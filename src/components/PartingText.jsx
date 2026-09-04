@@ -54,12 +54,12 @@ export function PartingText({ className, text }) {
       // Add a bit of extra height just in case the reflow adds lines
       height = (lineCount + 2) * resolvedLineHeightPx; 
       
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.font = resolvedFont;
       ctx.fillStyle = resolvedColor;
       ctx.textBaseline = 'top';
@@ -184,11 +184,9 @@ export function PartingText({ className, text }) {
           if (Math.abs(mouseX - targetMouseX) > 0.5 || Math.abs(mouseY - targetMouseY) > 0.5) {
             animationFrameId = requestAnimationFrame(loop);
           } else {
-            isAnimating = false; console.log("Animation stopped");
+            isAnimating = false;
             mouseX = targetMouseX;
             mouseY = targetMouseY;
-            // Draw one final frame perfectly snapped
-            // Actually, wait, it's safer to just do nothing here. The last frame drawn is close enough.
           }
         };
         animationFrameId = requestAnimationFrame(loop);
@@ -200,13 +198,36 @@ export function PartingText({ className, text }) {
       startAnimation();
     };
 
+    const touchListener = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        targetMouseX = e.touches[0].clientX - rect.left;
+        targetMouseY = e.touches[0].clientY - rect.top;
+        startAnimation();
+      }
+    };
+
+    const touchEndListener = () => {
+      targetMouseX = -1000;
+      targetMouseY = -1000;
+      startAnimation();
+    };
+
     window.addEventListener('mousemove', mouseListener);
     container.addEventListener('mouseleave', onMouseLeave);
+    container.addEventListener('touchstart', touchListener, { passive: true });
+    container.addEventListener('touchmove', touchListener, { passive: true });
+    container.addEventListener('touchend', touchEndListener, { passive: true });
+    container.addEventListener('touchcancel', touchEndListener, { passive: true });
     startAnimation();
 
     return () => {
       window.removeEventListener('mousemove', mouseListener);
       container.removeEventListener('mouseleave', onMouseLeave);
+      container.removeEventListener('touchstart', touchListener);
+      container.removeEventListener('touchmove', touchListener);
+      container.removeEventListener('touchend', touchEndListener);
+      container.removeEventListener('touchcancel', touchEndListener);
       resizeObserver.disconnect();
       cancelAnimationFrame(animationFrameId);
     };

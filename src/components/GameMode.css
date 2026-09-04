@@ -22,6 +22,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 6px rgba(2, 12, 27, 0.5);
+  touch-action: manipulation;
 }
 
 .game-toggle-btn:hover {
@@ -36,6 +37,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
+  min-width: 24px;
+  min-height: 24px;
 }
 
 .game-info-icon:hover {
@@ -54,6 +58,7 @@
   font-size: 13px;
   box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
   pointer-events: none;
+  z-index: 1010;
 }
 
 .game-info-tooltip p {
@@ -70,6 +75,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   z-index: 900;
   pointer-events: none; /* Let clicks pass through to page by default */
 }
@@ -105,6 +111,7 @@
   box-shadow: 0 20px 40px rgba(2, 12, 27, 0.8);
   opacity: 0;
   animation: modalFadeIn 0.3s forwards ease-out;
+  z-index: 1002;
 }
 
 @keyframes modalFadeIn {
@@ -129,12 +136,14 @@
 
 .touch-controls {
   position: fixed;
-  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   left: 0;
   width: 100%;
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
   z-index: 1000;
   pointer-events: auto;
 }
@@ -145,22 +154,23 @@
 }
 
 .touch-btn {
-  background: rgba(10, 25, 47, 0.7);
+  background: rgba(10, 25, 47, 0.8);
   border: 1px solid var(--green-bright);
   color: var(--green-bright);
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  font-size: 20px;
+  font-size: 22px;
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
   touch-action: manipulation;
+  box-shadow: 0 4px 10px rgba(2, 12, 27, 0.6);
 }
 
 .touch-btn.jump {
-  width: 70px;
+  width: 76px;
   border-radius: 25px;
   font-family: Menlo, Consolas, Monaco, 'Courier New', monospace;
   font-size: 14px;
@@ -168,4 +178,43 @@
 
 .touch-btn:active {
   background: var(--green-tint);
+}
+
+@media (max-width: 768px) {
+  .game-toggle-container {
+    top: 20px;
+    right: 70px;
+    gap: 6px;
+    z-index: 1001;
+  }
+  .game-toggle-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-height: 38px;
+  }
+  .game-hud {
+    top: 75px;
+    left: 20px;
+    font-size: 15px;
+  }
+  .game-info-tooltip {
+    right: -40px;
+    top: 36px;
+    width: 220px;
+    font-size: 12px;
+    padding: 12px;
+  }
+  .game-modal {
+    width: 90%;
+    max-width: 320px;
+    padding: 28px 16px;
+  }
+  .game-modal h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .touch-controls {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    padding: 0 16px;
+  }
 }

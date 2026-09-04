@@ -87,11 +87,11 @@ const LiveSkillChart = () => {
       <h3 className="chart-title">Recent Language Usage</h3>
       <div className="chart-wrapper">
         <ResponsiveContainer width="100%" height={280}>
-          <RadarChart cx="50%" cy="50%" outerRadius="65%" data={data}>
+          <RadarChart cx="50%" cy="50%" outerRadius="54%" data={data}>
             <PolarGrid stroke="var(--lightest-navy)" />
             <PolarAngleAxis 
               dataKey="name" 
-              tick={{ fill: 'var(--light-slate)', fontSize: 11, fontFamily: 'var(--font-mono, monospace)' }} 
+              tick={{ fill: 'var(--light-slate)', fontSize: 10.5, fontFamily: 'var(--font-mono, monospace)' }} 
             />
             <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />

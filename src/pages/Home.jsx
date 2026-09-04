@@ -128,7 +128,7 @@ const Home = () => {
         </div>
         <div className="hero-visual">
           <FadeInSection delay="600ms">
-            <Suspense fallback={<div style={{ width: '400px', height: '400px' }} />}>
+            <Suspense fallback={<div style={{ width: '100%', maxWidth: '400px', aspectRatio: '1 / 1' }} />}>
               <AsciiPortrait />
             </Suspense>
           </FadeInSection>
